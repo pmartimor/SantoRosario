@@ -1,0 +1,2468 @@
+# MANUAL MAESTRO — PROYECTO SANTO ROSARIO (v8.0)
+
+## 0. CÓMO USAR ESTE MANUAL
+### Reglas para cualquier LLM que continúe
+1. Responder con UNA SOLA vía estructurada. Prohibido dar dos alternativas
+   paralelas ("haz A o B").
+2. Marcadores: 🔴 CREAR [ruta] · 🟢 COPIAR ESTE CÓDIGO · 🟡 NO MODIFICAR.
+3. Pasos de Android Studio clic a clic para Jose (NO programador).
+4. Regla de oro: no escribir Kotlin hasta validar los assets implicados.
+5. Criterio litúrgico y de contenido: Jose tiene la última palabra.
+6. Confirmaciones cortas válidas: "VALIDADO", "Prueba OK", "sigue", etc.
+7. Nunca volcar código masivo sin antes validar los assets implicados.
+
+### Estado real del proyecto HOY
+- App TERMINADA y funcionando OK en el Xiaomi 14C.
+- H1, H2, H3, H4, H5 y H7 CERRADOS con "Prueba OK" / "icono OK".
+- H6 (cablear `g_portada` + pulidos) = MEJORA FUTURA OPCIONAL, fuera de
+  la hoja de ruta. La app está completa sin él.
+- Publicación en Google Play: PENDIENTE, nada hecho aún (§17).
+- Un solo PC de trabajo (§16). Audios normalizados con MP3Gain.
+
+---
+## 1. DECISIONES CERRADAS (no renegociables)
+| Tema | Decisión |
+|---|---|
+| Conectividad | 100 % offline. Sin Internet, sin DB, sin cuentas, sin analytics, sin ads |
+| Vibración / háptica | Prohibida |
+| Orientación | Vertical fija: `android:screenOrientation="portrait"` en el `<activity>` del manifiesto |
+| Pantalla | Encendida solo mientras la Pantalla de Rezo está visible (keepScreenOn) |
+| Segundo plano | Foreground Service dueño del motor y del MediaPlayer + PARTIAL_WAKE_LOCK + notificación |
+| Permisos | WAKE_LOCK, FOREGROUND_SERVICE, FOREGROUND_SERVICE_MEDIA_PLAYBACK, POST_NOTIFICATIONS. Ninguno más |
+| Notificación | Importancia baja, sin sonido, sin vibración, acción "Detener rezo" (equivale a ⏪). Tocar la notificación abre la app en Pantalla de Rezo |
+| WakeLock | Adquirido mientras suena; liberado en pausa y al detener |
+| Persistencia de pausa | `context.filesDir/estado_rosario.txt` al pausar (§9). Restauración en frío en Rezo EN PAUSA con ejecución seca silenciosa |
+| Abandonar el rezo | ⏪ o "Detener rezo": detiene audio y motor, para el servicio, libera WakeLock, borra `estado_rosario.txt`, vuelve a Inicio |
+| Cuentas / bolitas | `c_0`…`c_9` y `c_a`. Apagada `#686868`, encendida `#FFD000` |
+| Color del texto | SIN prefijos `1:`/`2:` en los archivos. Se controla desde el guion con `r`, `u`, `ur`. Textos LIMPIOS |
+| Audios | Sufijos `_m` (monitor) y `_p` (pueblo). Se permiten SIN sufijo cuando la locución es única. NO usar `_i`. Todo audio NUEVO se normaliza con MP3Gain al mismo nivel que el resto |
+| Retardo entre audios | NINGUNO en el motor: `s_` es bloqueante y encadena. Los respiros viven DENTRO de los mp3 |
+| Zona de texto de oración | Fija, SIN scroll, letra 20.sp (decisión de Jose: legibilidad para mayores aunque haya que trocear). Oraciones largas: troceadas, cada trozo sustituye |
+| Texto de cada oración en misterios | Se escribe UNA sola vez por misterio (persiste hasta el siguiente `o_` o `m_`); de la cuenta 1 a la 9 solo suenan los audios |
+| Gloria + Madre en pantalla | El bloque `o_madre1/o_madre2` se AÑADE al Gloria con flag `u` (no sustituye): así están escritos `g_misterio_i` y `g_misterio_p` |
+| Misterios impares (1,3,5) | `g_misterio_i`: monitor 1.ª mitad (blanco, `_m`), pueblo 2.ª (naranja, `_p`) |
+| Misterios pares (2,4) | `g_misterio_p`: pueblo 1.ª mitad (naranja, `_p`), monitor 2.ª (blanco, `_m`) |
+| Emparejado de días | LUNES+SÁBADO→`g_ls` · MARTES+VIERNES→`g_mv` · MIÉRCOLES+DOMINGO→`g_xd` · JUEVES→`g_ju` |
+| Letanías | Troceadas por Jose: `o_l01…o_l63` (sin `o_l03`; las invocaciones 15 y 17 NO se rezan: no aparecen en `g_final`). Respuestas compartidas `o_rpn` y `o_tmdn`; Kyrie con audio propio `_m`/`_p` |
+| Fin del guion raíz | Detener sesión y volver solo a Inicio |
+| Archivo faltante | Diálogo modal con la ruta exacta y botón "Continuar". Se omite el recurso y el guion sigue. La app nunca se cierra |
+| `m_*` | Sustituye misterio, LIMPIA zona de oración, reinicia bolitas y limpia flags |
+| Flags `u`/`r`/`ur` | SIEMPRE en minúscula y en línea propia. Se consumen con el siguiente `o_`. Se limpian con `m_*`, ⏪, día nuevo o Detener |
+| `g_portada` | EXISTE pero SIN cablear (mejora futura). Inicio muestra `i_portada.jpg` estáticamente |
+| Márgenes de pantalla | Las 3 pantallas raíz aplican `safeDrawingPadding()` + `padding(16.dp)` |
+| Tamaños vigentes | Inicio: título 34, botones 18 · Rezo: título 22, misterio 20, oración 20, glifos ⏪/ 24 · Ayuda: título 28, cuerpo 20, REGRESAR 20 · Diálogo: 24/20/22 |
+| Zona de imagen de Rezo | Altura fija 140.dp (Image y Box de respaldo) |
+| Botones circulares ⏪ y ⏯ | `contentPadding = PaddingValues(0.dp)` para centrado exacto del glifo |
+| Pantalla de Ayuda | Texto de `t_ayuda.txt` con scroll; botón fijo REGRESAR; Atrás = REGRESAR. La firma va AL FINAL de `t_ayuda.txt` |
+| Icono (H7 cerrado) | Instalado desde PNG 512×512 (dibujo centrado 360×360) con Image Asset Studio: Resize 85 %, fondo `#0A1A33`. Si se regenera: desinstalar app y ▶ Run. El mismo PNG sirve para Google Play |
+| Nombre en la tienda | "Santo Rosario sin Internet" (solo ficha de Play; bajo el icono del móvil sigue el nombre corto) |
+| Trabajo | UN solo PC. Copias de seguridad según §16 |
+
+---
+## 2. ENTORNO
+- IDE: Android Studio (Windows 11). Ruta: `C:\Users\MH\AndroidStudioProjects\SantoRosario`
+- Package: `com.pmartimor.rosario`
+- Dispositivo: Xiaomi 14C (depuración USB + adb)
+- Gradle: minSdk 26 · targetSdk 37 · compileSdk release(37) · AGP 9.3.2 ·
+  Kotlin 2.2.10 · Compose BOM 2026.08.00. 🟡 NO actualizar AGP si Studio lo sugiere
+- Stack: Kotlin + Jetpack Compose + MediaPlayer + AssetManager +
+  BitmapFactory. Sin librerías de terceros
+
+---
+## 3. ASSETS ACTUALES (estado real del disco)
+### 3.1 Estructura y reglas de nombres
+```text
+app/src/main/assets/
+├── guias/     (.txt, un comando por línea; líneas en blanco se ignoran)
+├── textos/    (.txt limpios, sin prefijos de color)
+├── sonidos/   (.mp3, normalizados con MP3Gain)
+└── imagenes/  (.jpg)
+```
+Minúsculas, sin espacios, sin acentos, sin eñes. `assets/` distingue
+mayúsculas. Cuidado con `.txt.txt` (activar "Vista > Mostrar > Extensiones
+de nombre de archivo"). Los nombres YA existentes son fuente de verdad:
+no se renombran; se corrige el archivo, nunca el guion ni el código.
+Un archivo presente en disco pero no referenciado por ningún guion es
+RESERVA: no se borra sin preguntarle a Jose.
+
+### 3.2 Checklist completo
+guias/ (9): `g_ls` · `g_mv` · `g_xd` · `g_ju` · `g_intro` · `g_misterio_i` ·
+`g_misterio_p` · `g_final` · `g_portada` (sin cablear)
+
+textos/: `t_ls` · `t_mv` · `t_xd` · `t_ju` · `t_ayuda` · `t_portada` ·
+`m_cruz` · `m_introduccion` · `m_credo` · `m_smj` · `m_letanias` ·
+`m_porlasintenciones` · `m_salve` · `m_subtuum` · `m_concedenos` ·
+`m_ls1…m_ls5` · `m_mv1…m_mv5` · `m_xd1…m_xd5` · `m_ju1…m_ju5` ·
+`o_cruz` · `o_smj1` · `o_smj2` · `o_credo1` · `o_credo2` · `o_abre1` ·
+`o_abre2` · `o_ven1` · `o_ven2` · `o_gloria1` · `o_gloria2` · `o_padre1` ·
+`o_padre2` · `o_ave1` · `o_ave2` · `o_madre1` · `o_madre2` · `o_dignate1` ·
+`o_dignate2` · `o_l01` · `o_l02` · `o_l04…o_l63` (sin `o_l03`) · `o_tmdn` ·
+`o_rpn` · `o_cordero` · `o_ps` · `o_es` · `o_tpdn` · `o_salve1` · `o_salve2` ·
+`o_bajo` · `o_concedenos` · `o_avemariapurisima` · `o_sinpecadoconcebida` ·
+RESERVAS sin referenciar: `o_ctp` · `o_escuchanos` · `o_perdonanos` ·
+`o_stp` · `o_tenpiedad` · `o_l15` · `o_l17`
+(El huérfano `textos.txt` fue ELIMINADO; si reaparece, eliminarlo.)
+
+sonidos/: `s_ls` · `s_mv` · `s_xd` · `s_ju` · `s_ls1…s_ls5` ·
+`s_mv1…s_mv5` · `s_xd1…s_xd5` · `s_ju1…s_ju5` · `s_cruz_m` · `s_smj1_m` ·
+`s_smj2_m` · `s_credo1` · `s_credo2` · `s_abre1_m` · `s_abre2_p` ·
+`s_ven1_m` · `s_ven2_p` · `s_gloria1_m` · `s_gloria2_p` · `s_gloria1_p` ·
+`s_gloria2_m` · `s_padre1_m` · `s_padre2_p` · `s_padre1_p` · `s_padre2_m` ·
+`s_ave1_m` · `s_ave2_p` · `s_ave1_p` · `s_ave2_m` · `s_avisogloria_m` ·
+`s_madre1_m` · `s_madre2_p` · `s_madre1_p` · `s_madre2_m` · `s_dignate1_m` ·
+`s_dignate2_p` · `s_l01_m` · `s_l01_p` · `s_l02_m` · `s_l02_p` ·
+`s_l04_m` · `s_l04_p` · `s_l05_m` · `s_l05_p` · `s_l06_m…s_l14_m` ·
+`s_l16_m` · `s_l18_m…s_l63_m` (no existen `s_l03`, `s_l15_m`, `s_l17_m`) ·
+`s_tmdn_p` · `s_rpn_p` · `s_cordero_m` · `s_ps_p` · `s_es_p` · `s_tpdn_p` ·
+`s_porlasintenciones` (SIN sufijo) · `s_salve1_m` · `s_salve2_m` ·
+`s_bajo_m` · `s_concedenos_m` · `s_avemariapurisima_m` ·
+`s_sinpecadoconcebida_p` · RESERVAS sin referenciar: `s_letania_m` ·
+`s_contriccion1` · `s_contriccion2`
+
+imagenes/ (22): `i_portada` · `i_letanias` (reserva) · `i_ls1…i_ls5` ·
+`i_mv1…i_mv5` · `i_xd1…i_xd5` · `i_ju1…i_ju5`
+(NO existen `i_ls`, `i_mv`, `i_xd`, `i_ju`: los días arrancan directo con
+la imagen del misterio 1.)
+
+### 3.3 Guiones validados v8 (contenido exacto)
+#### guias/g_ls.txt
+```text
+t_ls
+i_ls1
+s_ls
+g_intro
+m_ls1
+s_ls1
+g_misterio_i
+i_ls2
+m_ls2
+s_ls2
+g_misterio_p
+i_ls3
+m_ls3
+s_ls3
+g_misterio_i
+i_ls4
+m_ls4
+s_ls4
+g_misterio_p
+i_ls5
+m_ls5
+s_ls5
+g_misterio_i
+g_final
+```
+#### guias/g_mv.txt , g_xd.txt , g_ju.txt
+Idéntica estructura que `g_ls.txt` sustituyendo el prefijo del día
+(`mv` / `xd` / `ju`) en `t_`, `i_1…5`, `m_1…5` y `s_`/`s_1…5`. Misma
+alternancia de subguiones y mismo `g_final`.
+
+#### guias/g_intro.txt
+```text
+c_a
+m_cruz
+o_cruz
+s_cruz_m
+m_smj
+o_smj1
+s_smj1_m
+o_smj2
+s_smj2_m
+m_credo
+o_credo1
+s_credo1
+o_credo2
+s_credo2
+m_introduccion
+o_abre1
+ur
+o_abre2
+s_abre1_m
+s_abre2_p
+u
+o_ven1
+ur
+o_ven2
+s_ven1_m
+s_ven2_p
+u
+o_gloria1
+ur
+o_gloria2
+s_gloria1_m
+s_gloria2_p
+```
+
+#### guias/g_misterio_i.txt
+```text
+o_padre1
+ur
+o_padre2
+s_padre1_m
+s_padre2_p
+c_0
+o_ave1
+ur
+o_ave2
+s_ave1_m
+s_ave2_p
+c_1
+s_ave1_m
+s_ave2_p
+c_2
+s_ave1_m
+s_ave2_p
+c_3
+s_ave1_m
+s_ave2_p
+c_4
+s_ave1_m
+s_ave2_p
+c_5
+s_ave1_m
+s_ave2_p
+c_6
+s_ave1_m
+s_ave2_p
+c_7
+s_ave1_m
+s_ave2_p
+c_8
+s_ave1_m
+s_ave2_p
+c_9
+s_ave1_m
+s_ave2_p
+c_a
+o_gloria1
+ur
+o_gloria2
+s_gloria1_m
+s_gloria2_p
+u
+o_madre1
+ur
+o_madre2
+s_madre1_m
+s_madre2_p
+```
+
+#### guias/g_misterio_p.txt
+```text
+r
+o_padre1
+u
+o_padre2
+s_padre1_p
+s_padre2_m
+c_0
+r
+o_ave1
+u
+o_ave2
+s_ave1_p
+s_ave2_m
+c_1
+s_ave1_p
+s_ave2_m
+c_2
+s_ave1_p
+s_ave2_m
+c_3
+s_ave1_p
+s_ave2_m
+c_4
+s_ave1_p
+s_ave2_m
+c_5
+s_ave1_p
+s_ave2_m
+c_6
+s_ave1_p
+s_ave2_m
+c_7
+s_ave1_p
+s_ave2_m
+c_8
+s_ave1_p
+s_ave2_m
+c_9
+s_ave1_p
+s_avisogloria_m
+s_ave2_m
+c_a
+r
+o_gloria1
+u
+o_gloria2
+s_gloria1_p
+s_gloria2_m
+u
+r
+o_madre1
+u
+o_madre2
+s_madre1_p
+s_madre2_m
+```
+
+#### guias/g_final.txt (versión corregida v8: flags en minúscula, sin
+#### `s_salve_m`, y `s_porlasintenciones` sin sufijo)
+```text
+m_letanias
+o_dignate1
+ur
+o_dignate2
+s_dignate1_m
+s_dignate2_p
+o_l01
+ur
+o_l01
+s_l01_m
+s_l01_p
+u
+o_l02
+ur
+o_l02
+s_l02_m
+s_l02_p
+u
+o_l01
+ur
+o_l01
+s_l01_m
+s_l01_p
+o_l04
+ur
+o_l04
+s_l04_m
+s_l04_p
+u
+o_l05
+ur
+o_l05
+s_l05_m
+s_l05_p
+o_l06
+ur
+o_tmdn
+s_l06_m
+s_tmdn_p
+u
+o_l07
+ur
+o_tmdn
+s_l07_m
+s_tmdn_p
+u
+o_l08
+ur
+o_tmdn
+s_l08_m
+s_tmdn_p
+u
+o_l09
+ur
+o_tmdn
+s_l09_m
+s_tmdn_p
+o_l10
+ur
+o_rpn
+s_l10_m
+s_rpn_p
+u
+o_l11
+ur
+o_rpn
+s_l11_m
+s_rpn_p
+u
+o_l12
+ur
+o_rpn
+s_l12_m
+s_rpn_p
+u
+o_l13
+ur
+o_rpn
+s_l13_m
+s_rpn_p
+o_l14
+ur
+o_rpn
+s_l14_m
+s_rpn_p
+u
+o_l16
+ur
+o_rpn
+s_l16_m
+s_rpn_p
+u
+o_l18
+ur
+o_rpn
+s_l18_m
+s_rpn_p
+u
+o_l19
+ur
+o_rpn
+s_l19_m
+s_rpn_p
+o_l20
+ur
+o_rpn
+s_l20_m
+s_rpn_p
+u
+o_l21
+ur
+o_rpn
+s_l21_m
+s_rpn_p
+u
+o_l22
+ur
+o_rpn
+s_l22_m
+s_rpn_p
+u
+o_l23
+ur
+o_rpn
+s_l23_m
+s_rpn_p
+o_l24
+ur
+o_rpn
+s_l24_m
+s_rpn_p
+u
+o_l25
+ur
+o_rpn
+s_l25_m
+s_rpn_p
+u
+o_l26
+ur
+o_rpn
+s_l26_m
+s_rpn_p
+u
+o_l27
+ur
+o_rpn
+s_l27_m
+s_rpn_p
+o_l28
+ur
+o_rpn
+s_l28_m
+s_rpn_p
+u
+o_l29
+ur
+o_rpn
+s_l29_m
+s_rpn_p
+u
+o_l30
+ur
+o_rpn
+s_l30_m
+s_rpn_p
+u
+o_l31
+ur
+o_rpn
+s_l31_m
+s_rpn_p
+o_l32
+ur
+o_rpn
+s_l32_m
+s_rpn_p
+u
+o_l33
+ur
+o_rpn
+s_l33_m
+s_rpn_p
+u
+o_l34
+ur
+o_rpn
+s_l34_m
+s_rpn_p
+u
+o_l35
+ur
+o_rpn
+s_l35_m
+s_rpn_p
+o_l36
+ur
+o_rpn
+s_l36_m
+s_rpn_p
+u
+o_l37
+ur
+o_rpn
+s_l37_m
+s_rpn_p
+u
+o_l38
+ur
+o_rpn
+s_l38_m
+s_rpn_p
+u
+o_l39
+ur
+o_rpn
+s_l39_m
+s_rpn_p
+o_l40
+ur
+o_rpn
+s_l40_m
+s_rpn_p
+u
+o_l41
+ur
+o_rpn
+s_l41_m
+s_rpn_p
+u
+o_l42
+ur
+o_rpn
+s_l42_m
+s_rpn_p
+u
+o_l43
+ur
+o_rpn
+s_l43_m
+s_rpn_p
+o_l44
+ur
+o_rpn
+s_l44_m
+s_rpn_p
+u
+o_l45
+ur
+o_rpn
+s_l45_m
+s_rpn_p
+u
+o_l46
+ur
+o_rpn
+s_l46_m
+s_rpn_p
+u
+o_l47
+ur
+o_rpn
+s_l47_m
+s_rpn_p
+o_l48
+ur
+o_rpn
+s_l48_m
+s_rpn_p
+u
+o_l49
+ur
+o_rpn
+s_l49_m
+s_rpn_p
+u
+o_l50
+ur
+o_rpn
+s_l50_m
+s_rpn_p
+u
+o_l51
+ur
+o_rpn
+s_l51_m
+s_rpn_p
+o_l52
+ur
+o_rpn
+s_l52_m
+s_rpn_p
+u
+o_l53
+ur
+o_rpn
+s_l53_m
+s_rpn_p
+u
+o_l54
+ur
+o_rpn
+s_l54_m
+s_rpn_p
+u
+o_l55
+ur
+o_rpn
+s_l55_m
+s_rpn_p
+o_l56
+ur
+o_rpn
+s_l56_m
+s_rpn_p
+u
+o_l57
+ur
+o_rpn
+s_l57_m
+s_rpn_p
+u
+o_l58
+ur
+o_rpn
+s_l58_m
+s_rpn_p
+u
+o_l59
+ur
+o_rpn
+s_l59_m
+s_rpn_p
+o_l60
+ur
+o_rpn
+s_l60_m
+s_rpn_p
+u
+o_l61
+ur
+o_rpn
+s_l61_m
+s_rpn_p
+u
+o_l62
+ur
+o_rpn
+s_l62_m
+s_rpn_p
+u
+o_l63
+ur
+o_rpn
+s_l63_m
+s_rpn_p
+o_cordero
+ur
+o_ps
+s_cordero_m
+s_ps_p
+u
+o_cordero
+ur
+o_es
+s_cordero_m
+s_es_p
+u
+o_cordero
+ur
+o_tpdn
+s_cordero_m
+s_tpdn_p
+m_porlasintenciones
+s_porlasintenciones
+o_padre1
+ur
+o_padre2
+s_padre1_m
+s_padre2_p
+o_ave1
+ur
+o_ave2
+s_ave1_m
+s_ave2_p
+o_gloria1
+ur
+o_gloria2
+s_gloria1_m
+s_gloria2_p
+m_salve
+o_salve1
+s_salve1_m
+o_salve2
+s_salve2_m
+m_subtuum
+o_bajo
+s_bajo_m
+m_concedenos
+o_concedenos
+s_concedenos_m
+u
+o_avemariapurisima
+ur
+o_sinpecadoconcebida
+s_avemariapurisima_m
+s_sinpecadoconcebida_p
+```
+
+#### guias/g_portada.txt (sin cablear, mejora futura)
+```text
+t_portada
+i_portada
+```
+
+### 3.4 textos/t_ayuda.txt (editable por Jose sin tocar código)
+```text
+CÓMO USAR ESTA APP
+
+1. En la pantalla principal, pulse el botón del día que quiera rezar (por ejemplo: LUNES).
+
+2. El Rosario empieza solo: escuchará la voz y verá cada oración en la pantalla.
+
+3. Las bolitas amarillas indican cuántas Avemarías lleva rezadas del misterio.
+
+4. El botón ⏯ detiene un momento el rezo y lo vuelve a poner en marcha.
+
+5. El botón ⏪ abandona el rezo y vuelve a la pantalla principal.
+
+6. Si sale de la app o se apaga la pantalla, el rezo le espera pausado: al abrir la app otra vez estará en el mismo sitio, y pulse ⏯ para continuar.
+
+7. Mientras reza, verá arriba un aviso del teléfono con el botón "Detener rezo": hace lo mismo que ⏪.
+
+8. El volumen de la voz se ajusta con los botones laterales del teléfono.
+
+9. La pantalla permanece encendida durante el rezo. La app funciona sin internet, sin anuncios y sin recoger datos.
+
+10. Si pulsa algo por equivocación, no se pierde nada: siempre puede volver con ⏪ o con el botón REGRESAR.
+
+Idea y contenido: pmartimor
+Versión 1.0
+```
+
+---
+## 4. SEMÁNTICA DEL MOTOR (diccionario estricto)
+| Comando | Acción |
+|---|---|
+| `g_x` | Ejecuta subguion `guias/g_x.txt`; al terminar retorna a la línea siguiente del padre |
+| `t_x` | Sustituye zona de título con `textos/t_x.txt` |
+| `m_x` | Sustituye zona de misterio con `textos/m_x.txt`; limpia zona de oración; reinicia bolitas; limpia flags |
+| `i_x` | Sustituye imagen con `imagenes/i_x.jpg` |
+| `o_x` | Texto de `textos/o_x.txt`: sustituye la zona, o AÑADE si hay flag `u`/`ur`; naranja si `r`/`ur`, blanco en otro caso. PERMANECE hasta el siguiente `o_` o `m_` |
+| `s_x` | Reproduce `sonidos/s_x.mp3` de forma BLOQUEANTE (nunca se solapan) |
+| `c_0`…`c_9` | Enciende esa bolita (acumulativo) |
+| `c_a` | Apaga las 10 bolitas |
+| `u` / `r` / `ur` | Flags unión / naranja / ambas, en MINÚSCULA y línea propia; consumidas por el siguiente `o_` |
+Reglas: líneas en blanco ignoradas; ejecución secuencial; recurso faltante
+→ diálogo + Continuar; fin del guion raíz → `finalizado = true` → Inicio.
+En ejecución seca de restauración (§9): se omiten `s_` e `i_` y se suprimen
+diálogos; el resto se aplica para reconstruir el estado visual.
+
+---
+## 5. UI ACTUAL (Compose)
+- Inicio: título SANTO ROSARIO (34), `i_portada.jpg` (220.dp), 8 botones
+  2×4 (18): LUNES→g_ls · VIERNES→g_mv · MARTES→g_mv · SÁBADO→g_ls ·
+  MIÉRCOLES→g_xd · DOMINGO→g_xd · JUEVES→g_ju · AYUDA→Pantalla de Ayuda.
+- Rezo: fila título (22) + ⏪ (56.dp, contentPadding 0) · imagen (140.dp) ·
+  misterio (20) · 10 bolitas (18.dp) + ⏯ (56.dp, contentPadding 0) ·
+  zona de texto sin scroll (20).
+- Ayuda: título AYUDA (28) · cuerpo de `t_ayuda.txt` con scroll (20) ·
+  botón fijo REGRESAR (20). Atrás = REGRESAR.
+- Diálogo de error modal: título 24, texto 20, botón "Continuar" 22.
+- Atrás del sistema en Rezo = ⏪. En Inicio = salir.
+- Colores: fondo `#0A1A33`, botones `#153C66`, blanco `#FFFFFF`,
+  naranja `#FFA500`, bolitas `#686868` / `#FFD000`.
+- Las 3 pantallas raíz: `safeDrawingPadding()` + `padding(16.dp)`.
+- keepScreenOn solo en Rezo.
+
+---
+## 6. MANIFIESTO (estado actual + orientación recuperada)
+Permisos (antes de `<application>`): WAKE_LOCK, FOREGROUND_SERVICE,
+FOREGROUND_SERVICE_MEDIA_PLAYBACK, POST_NOTIFICATIONS.
+Dentro de `<application>`, tras el `<activity>`:
+`<service android:name=".RosarioForegroundService" android:exported="false" android:foregroundServiceType="mediaPlayback" />`
+El `<activity>` debe incluir `android:screenOrientation="portrait"`.
+
+---
+## 7. CÓDIGO KOTLIN VIGENTE
+(Se añade en la PARTE 2 de este documento, tras responder "sigue".)
+
+---
+## 8. PERSISTENCIA estado_rosario.txt (implementado)
+Archivo: `context.filesDir/estado_rosario.txt`. Se escribe al PAUSAR.
+Se borra con ⏪, con "Detener rezo", al iniciar un día nuevo y al terminar
+el guion raíz. Formato exacto, 6 líneas:
+```text
+LÍNEA 1: guion raíz con extensión (ej. g_ls.txt)
+LÍNEA 2: pila con índices, separada por comas (ej. g_ls.txt:21,g_misterio_i.txt:6)
+(índices 0-based sobre líneas no vacías; el último par es el guion activo)
+LÍNEA 3: índice de línea actual del guion activo (duplicado del último par)
+LÍNEA 4: máscara de 10 caracteres 1/0 (ej. 1110000000)
+LÍNEA 5: archivo de título actual o "-" (ej. t_ls.txt)
+LÍNEA 6: archivo de misterio actual o "-" (ej. m_ls1.txt)
+```
+Imagen al restaurar: si línea 6 es `m_xxN.txt` → `i_xxN.jpg`; si no,
+`i_portada.jpg`.
+Restauración en frío: Pantalla de Rezo EN PAUSA, sin audio automático,
+reconstruyendo el estado visual con ejecución seca silenciosa hasta el
+punto guardado. ⏯ reanuda desde la línea guardada (su audio `s_`, si lo
+hay, empieza desde el principio).
+Estado corrupto o punto inalcanzable → se borra el archivo y se abre
+Inicio sin error visible.
+Tras editar cualquier guion, descartar antes toda pausa guardada antigua
+(abrir la app; si arranca en Rezo EN PAUSA, pulsar ⏪).
+
+---
+## 9. FOREGROUND SERVICE (implementado)
+- El servicio es el DUEÑO del motor y del MediaPlayer.
+- Acciones: `ACTION_INICIAR` (extra `guion`), `ACTION_DETENER`,
+  `ACTION_RESTAURAR`. Las cadenas literales de esas acciones en el
+  companion usan prefijos históricos (`com.pmartimor.rosario.*` para
+  INICIAR/DETENER y `com.pmartimor.rosario.*` para RESTAURAR): son
+  constantes internas únicas y coherentes; 🟡 NO "corregirlas" en un solo
+  lado.
+- Notificación persistente, importancia baja, sin sonido, sin vibración,
+  acción "Detener rezo". Tocar la notificación abre la app en Rezo.
+- PARTIAL_WAKE_LOCK mientras suena; liberado en pausa y al detener.
+- POST_NOTIFICATIONS se pide antes del primer rezo; si se deniega, Toast
+  de aviso y el rezo solo funciona con la app en pantalla.
+- `START_NOT_STICKY`.
+
+---
+## 10. REGLAS ANTI-REGRESIÓN (no reintroducir)
+1. Usar SIEMPRE `continuation.resumeWith(Result.success(Unit))` en el
+   `suspendCancellableCoroutine` del audio. NO importar
+   `kotlinx.coroutines.resume`.
+2. `Modifier.weight(1f)` SOLO dentro de un lambda `Row { }` o `Column { }`.
+3. `MainActivity.kt` existe desde la plantilla: si Studio dice
+   "already exists", se ABRE y se sustituye el contenido, no se crea otro.
+4. Si el paquete no existe al crear un archivo, escribir el nombre
+   completo con puntos: `com.pmartimor.rosario.NombreArchivo`.
+5. "No Devices": `adb kill-server` → `adb start-server` → `adb devices` y
+   aceptar "Permitir depuración USB" en el móvil.
+6. Xiaomi: Opciones de desarrollador → Depuración USB, "Depuración USB
+   (Ajustes de seguridad)" e "Instalar por USB".
+7. Para repetir pruebas NO hace falta desinstalar: ▶ Run sobrescribe app y
+   assets. Excepción: tras regenerar el icono, desinstalar antes.
+8. Avisos amarillos (⚠) y verdes (typo) se IGNORAN. Solo importan rojos.
+9. Si Studio sugiere actualizar AGP/Gradle: NO aceptar.
+10. Una función `public` no puede exponer tipos `private` del archivo:
+    `AppSantoRosario` es `private fun`.
+11. Flags de guion SIEMPRE en minúscula (`u`, `r`, `ur`): una `U` mayúscula
+    provoca diálogo "Comando no reconocido".
+12. Todo audio nuevo se normaliza con MP3Gain al nivel del resto antes de
+    copiarlo a `sonidos/`.
+13. El manifiesto debe conservar `android:screenOrientation="portrait"`.
+
+---
+## 11. HOJA DE RUTA Y ESTADO
+1. H1 CERRADO · 2. H2 CERRADO · 3. H3 CERRADO · 4. H4 CERRADO ·
+5. H5 CERRADO ("H5 Prueba OK") · 6. H7 CERRADO ("icono OK").
+7. H6 = MEJORA FUTURA OPCIONAL (cablear `g_portada` y pulidos): fuera de
+   la hoja de ruta; la app está completa sin él.
+8. PUBLICACIÓN GOOGLE PLAY = siguiente fase (§17). Nada hecho aún.
+
+---
+## 12. PROTOCOLO DE PRUEBA EN EL XIAOMI 14C
+1. ▶ Run (sobrescribe la app instalada).
+2. Inicio: título, portada, 8 botones.
+3. Día elegido: título, imagen del misterio 1, audio de presentación,
+   introducción con colores y audios bloqueantes, 5 misterios con bolitas
+   0→9 por misterio, alternancia monitor/pueblo según impar/par, y cierre
+   completo (`g_final`) SIN ningún diálogo de error, hasta volver solo a
+   Inicio.
+4. ⏯ pausa/continúa exacta; ⏪ detiene y limpia; notificación presente con
+   "Detener rezo"; pausa + cierre en frío (`adb shell am force-stop
+   com.pmartimor.rosario`) + reapertura desde el icono = Rezo EN PAUSA
+   reconstruido; ⏯ reanuda desde la línea guardada.
+5. AYUDA: texto desplazable, firma al final, REGRESAR y Atrás vuelven a
+   Inicio; en Ayuda la pantalla no se mantiene encendida.
+6. Cualquier archivo faltante → diálogo con ruta y botón Continuar.
+7. Reporte del usuario: "Prueba OK" o descripción/captura del fallo.
+
+---
+## 13. ANEXO ANDROID STUDIO PARA JOSE (no programador)
+- Crear archivo Kotlin: clic derecho en `com.pmartimor.rosario` →
+  New > Kotlin Class/File → nombre sin `.kt`.
+- Imports: palabra en rojo → `Alt + Enter` → Import.
+- Compilar: `Ctrl + F9` (debe decir BUILD SUCCESSFUL).
+- Ejecutar: botón verde ▶ con el móvil conectado y elegido en la barra.
+- Terminal de Studio: `adb devices`, `adb kill-server`,
+  `adb start-server`, `adb uninstall com.pmartimor.rosario`,
+  `adb shell am force-stop com.pmartimor.rosario`.
+- Ver extensiones reales en Windows: Vista > Mostrar > Extensiones de
+  nombre de archivo. Copiar nombres de carpeta: `Ctrl + A` →
+  `Shift + clic derecho` → "Copiar como ruta de acceso".
+- Sustituir contenido de un archivo: `Ctrl + A` → `Supr` → pegar →
+  `Ctrl + S`. Buscar: `Ctrl + F`.
+
+---
+## 14. ESTILO DE COMUNICACIÓN CON EL USUARIO
+- Una sola respuesta estructurada por turno; sin alternativas dobles.
+- Pasos de Android Studio explicados clic a clic.
+- Pedir como máximo las preguntas imprescindibles; aceptar confirmaciones
+  cortas ("VALIDADO", "Prueba OK", "sigue", "corregido").
+- Nunca volcar código masivo sin antes validar los assets implicados.
+- El criterio litúrgico y de contenido es de Jose; los textos de ayuda, la
+  firma y los textos de oración se editan en sus `.txt` sin tocar código.
+
+---
+## 15. COPIAS DE SEGURIDAD (un solo PC)
+- Al terminar cada sesión de trabajo: cerrar Android Studio y copiar la
+  carpeta `SantoRosario` COMPLETA a una unidad externa o carpeta de
+  respaldo, sobrescribiendo la copia anterior.
+- Copiar TAMBIÉN, fuera del proyecto, el keystore `.jks` de firma y el
+  papel con sus 4 datos (ruta, contraseñas, alias): sin eso no se puede
+  actualizar la app publicada.
+- Pueden excluirse de la copia los temporales regenerables: `.gradle`,
+  `.idea`, `.kotlin`, `build`, `app\build`, `local.properties`.
+- NUNCA colocar el proyecto en carpetas sincronizadas en la nube.
+
+---
+## 16. PUBLICACIÓN EN GOOGLE PLAY (pendiente, nada hecho aún)
+### 16.1 Cuenta
+`https://play.google.com/console` → crear cuenta de desarrollador
+(25 $ pago único) → perfil → verificación → activación (minutos a 48 h).
+### 16.2 Keystore y AAB
+1. `Build > Generate Signed Bundle / APK...` → `Android App Bundle`.
+2. `Create new...`: keystore FUERA del proyecto (ej.
+   `C:\Users\MH\Keystores\rosario.jks`), contraseñas anotadas en papel,
+   alias `rosario`, validez 25 años, certificado con nombre.
+3. `Next` → variant `release` → firmas V1 y V2 → `Finish`.
+4. Resultado: `app\release\app-release.aab` (copiarlo al Escritorio).
+### 16.3 Ficha de la tienda
+- Nombre (30): `Santo Rosario sin Internet`
+- Descripción breve (80): `Rosario diario con voz y texto: sin internet,
+  sin anuncios y muy ligero.`
+- Descripción completa: la aprobada por Jose (offline en cualquier sitio, ~15 MB "menos que unas pocas fotos", letras y botones grandes, pausa y
+  reanudación, contenido completo del Rosario, sin anuncios/cuentas/datos,
+  cierre "Hecha con cariño para los grupos de Rosario…").
+- Icono 512×512 (el PNG de H7) · imagen destacada 1024×500 con fondo
+  `#0A1A33` · 2–3 capturas del móvil (Inicio, rezo con bolitas, Ayuda).
+- Categoría: Estilo de vida o Libros y obras de consulta.
+### 16.4 Políticas
+- Seguridad de los datos: "No se recopilan datos", "No se comparten
+  datos".
+- Clasificación IARC: todo "No" salvo religión cristiana → PEGI 3.
+- Política de privacidad: URL de documento público que diga que la app no   recoge datos, no usa Internet y no incluye analíticas ni publicidad.
+### 16.5 Subida
+`Producción > Crear nueva versión` → activar Play App Signing → subir el
+`.aab` → nombre de versión `1.0` → notas → Guardar → Revisar →
+`Iniciar despliegue en Producción`. Revisión de Google: 1–7 días.
+### 16.6 Actualizaciones futuras
+Subir el número de versión, regenerar AAB con el MISMO keystore y subirlo como nueva versión de Producción.
+
+## 7. CÓDIGO KOTLIN VIGENTE (tal cual en disco)
+Notas de archivo:
+- Rutas: `app/src/main/java/com/pmartimor/rosario/` + nombre del archivo.
+- El archivo del servicio puede aparecer en Windows como
+  `RosarioForeGroundService.kt` (mayúscula interna): Windows no distingue
+  mayúsculas en nombres de archivo; lo que importa es que la CLASE se
+  llama `RosarioForegroundService`. 🟡 No renombrar.
+- Las cadenas `ACTION_INICIAR` / `ACTION_DETENER` / `ACTION_RESTAURAR` usan
+el prefijo `com.pmartimor.rosario.*`. Son constantes internas únicas y
+coherentes entre MainActivity y el servicio. 🟡 NO cambiarlas en un solo
+lado.
+
+### 7.1 🔴 MotorRosario.kt — 🟢 contenido exacto
+```kotlin
+package com.pmartimor.rosario
+
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.media.MediaPlayer
+import java.io.File
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
+
+data class TextoColor(
+    val texto: String,
+    val color: Long
+)
+
+data class EstadoRosario(
+    val titulo: String = "",
+    val misterio: String = "",
+    val imagen: Bitmap? = null,
+    val oracion: List<TextoColor> = emptyList(),
+    val cuentas: List<Boolean> = List(10) { false },
+    val pausado: Boolean = false,
+    val finalizado: Boolean = false,
+    val dialogoError: String? = null
+)
+
+private data class DatosGuardados(
+    val raiz: String,
+    val pila: List<Pair<String, Int>>,
+    val misterioArchivo: String
+)
+
+class MotorRosario(private val context: Context) {
+
+    companion object {
+        private const val NOMBRE_ESTADO = "estado_rosario.txt"
+
+        fun hayEstadoGuardado(context: Context): Boolean {
+            return File(context.filesDir, NOMBRE_ESTADO).exists()
+        }
+    }
+
+    private val _estado = MutableStateFlow(EstadoRosario())
+    val estado: StateFlow<EstadoRosario> = _estado
+
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+    private var trabajo: Job? = null
+    private var mediaPlayer: MediaPlayer? = null
+    private var unionPendiente = false
+    private var naranjaPendiente = false
+    private var errorContinuation: CompletableDeferred<Unit>? = null
+
+    private val pila = mutableListOf<Pair<String, Int>>()
+    private var modoSeco = false
+    private var objetivoRestauracion: List<Pair<String, Int>>? = null
+    private var imagenRestauracion: String? = null
+    private var tituloActual: String? = null
+    private var misterioActual: String? = null
+
+    fun iniciar(guion: String) {
+        detener()
+        _estado.update {
+            it.copy(
+                pausado = false,
+                finalizado = false
+            )
+        }
+        trabajo = scope.launch {
+            try {
+                ejecutarGuion(guion)
+                _estado.update {
+                    it.copy(finalizado = true)
+                }
+            } catch (e: CancellationException) {
+                // El usuario ha detenido el rezo.
+            }
+        }
+    }
+
+    fun detener() {
+        trabajo?.cancel()
+        trabajo = null
+        liberarAudio()
+        unionPendiente = false
+        naranjaPendiente = false
+        errorContinuation?.complete(Unit)
+        errorContinuation = null
+        pila.clear()
+        modoSeco = false
+        objetivoRestauracion = null
+        imagenRestauracion = null
+        tituloActual = null
+        misterioActual = null
+        borrarEstado()
+        _estado.value = EstadoRosario()
+    }
+
+    fun pausarReanudar() {
+        val nuevoPausado = !_estado.value.pausado
+        _estado.update {
+            it.copy(pausado = nuevoPausado)
+        }
+        if (nuevoPausado) {
+            mediaPlayer?.pause()
+            guardarEstado()
+        } else {
+            mediaPlayer?.start()
+        }
+    }
+
+    fun aceptarError() {
+        errorContinuation?.complete(Unit)
+        errorContinuation = null
+    }
+
+    fun restaurar(): Boolean {
+        val datos = leerEstadoGuardado() ?: return false
+
+        trabajo?.cancel()
+        trabajo = null
+        liberarAudio()
+        pila.clear()
+        unionPendiente = false
+        naranjaPendiente = false
+        _estado.value = EstadoRosario()
+
+        objetivoRestauracion = datos.pila
+        imagenRestauracion = datos.misterioArchivo
+        modoSeco = true
+
+        trabajo = scope.launch {
+            try {
+                ejecutarGuion(datos.raiz.removeSuffix(".txt"))
+                if (modoSeco) {
+                    modoSeco = false
+                    objetivoRestauracion = null
+                    _estado.update {
+                        it.copy(finalizado = true)
+                    }
+                }
+            } catch (e: CancellationException) {
+                // El usuario ha detenido el rezo.
+            }
+        }
+        return true
+    }
+
+    private suspend fun ejecutarGuion(nombre: String) {
+        val lineas = cargarLineasGuion(nombre)
+            ?.map { it.trim() }
+            ?.filter { it.isNotEmpty() }
+
+        if (lineas == null) {
+            mostrarError(
+                "No se encuentra el archivo de guion:\n" +
+                    "guias/$nombre.txt"
+            )
+            return
+        }
+
+        val nombreArchivo = "$nombre.txt"
+        pila.add(nombreArchivo to 0)
+
+        for ((indice, linea) in lineas.withIndex()) {
+            pila[pila.lastIndex] = nombreArchivo to indice
+
+            if (modoSeco && objetivoRestauracion != null && pila == objetivoRestauracion) {
+                modoSeco = false
+                objetivoRestauracion = null
+                aplicarImagenRestauracion()
+                _estado.update {
+                    it.copy(pausado = true)
+                }
+            }
+
+            esperarSiPausado()
+            procesarComando(linea)
+        }
+
+        pila.removeAt(pila.lastIndex)
+    }
+
+    private suspend fun procesarComando(linea: String) {
+        when {
+            linea == "u" -> {
+                unionPendiente = true
+            }
+            linea == "r" -> {
+                naranjaPendiente = true
+            }
+            linea == "ur" -> {
+                unionPendiente = true
+                naranjaPendiente = true
+            }
+            linea == "c_a" -> {
+                _estado.update {
+                    it.copy(cuentas = List(10) { false })
+                }
+            }
+            linea.startsWith("c_") -> {
+                val indice = linea.removePrefix("c_").toIntOrNull()
+                if (indice != null && indice in 0..9) {
+                    _estado.update { estado ->
+                        val nuevasCuentas = estado.cuentas.toMutableList()
+                        nuevasCuentas[indice] = true
+                        estado.copy(cuentas = nuevasCuentas)
+                    }
+                } else {
+                    mostrarError(
+                        "Cuenta no válida:\n" +
+                            linea
+                    )
+                }
+            }
+            linea.startsWith("g_") -> {
+                ejecutarGuion(linea)
+            }
+            linea.startsWith("t_") -> {
+                val texto = cargarTexto(linea)
+                if (texto == null) {
+                    mostrarError(
+                        "No se encuentra el archivo de texto:\n" +
+                            "textos/$linea.txt"
+                    )
+                } else {
+                    tituloActual = "$linea.txt"
+                    _estado.update {
+                        it.copy(titulo = texto)
+                    }
+                }
+            }
+            linea.startsWith("m_") -> {
+                val texto = cargarTexto(linea)
+                if (texto == null) {
+                    mostrarError(
+                        "No se encuentra el archivo de texto:\n" +
+                            "textos/$linea.txt"
+                    )
+                } else {
+                    unionPendiente = false
+                    naranjaPendiente = false
+                    misterioActual = "$linea.txt"
+                    _estado.update {
+                        it.copy(
+                            misterio = texto,
+                            oracion = emptyList(),
+                            cuentas = List(10) { false }
+                        )
+                    }
+                }
+            }
+            linea.startsWith("i_") -> {
+                if (!modoSeco) {
+                    val bitmap = cargarImagen(linea)
+                    if (bitmap == null) {
+                        mostrarError(
+                            "No se encuentra el archivo de imagen:\n" +
+                                "imagenes/$linea.jpg"
+                        )
+                    } else {
+                        _estado.update {
+                            it.copy(imagen = bitmap)
+                        }
+                    }
+                }
+            }
+            linea.startsWith("o_") -> {
+                mostrarOracion(linea)
+            }
+            linea.startsWith("s_") -> {
+                if (!modoSeco) {
+                    reproducirAudio(linea)
+                }
+            }
+            else -> {
+                mostrarError(
+                    "Comando no reconocido:\n" +
+                        linea
+                )
+            }
+        }
+    }
+
+    private suspend fun mostrarOracion(nombre: String) {
+        val texto = cargarTexto(nombre)
+        if (texto == null) {
+            unionPendiente = false
+            naranjaPendiente = false
+            mostrarError(
+                "No se encuentra el archivo de texto:\n" +
+                    "textos/$nombre.txt"
+            )
+            return
+        }
+
+        val color = if (naranjaPendiente) {
+            0xFFFFA500
+        } else {
+            0xFFFFFFFF
+        }
+
+        val bloques = texto.split("\n")
+            .map { it.trim() }
+            .filter { it.isNotEmpty() }
+            .map { TextoColor(it, color) }
+
+        _estado.update { estado ->
+            val nuevaOracion = if (unionPendiente) {
+                estado.oracion + bloques
+            } else {
+                bloques
+            }
+            estado.copy(oracion = nuevaOracion)
+        }
+
+        unionPendiente = false
+        naranjaPendiente = false
+    }
+
+    private suspend fun mostrarError(mensaje: String) {
+        if (modoSeco) {
+            return
+        }
+        val continuation = CompletableDeferred<Unit>()
+        errorContinuation = continuation
+        _estado.update {
+            it.copy(dialogoError = mensaje)
+        }
+        continuation.await()
+        _estado.update {
+            it.copy(dialogoError = null)
+        }
+    }
+
+    private suspend fun esperarSiPausado() {
+        while (_estado.value.pausado) {
+            delay(100)
+        }
+    }
+
+    private suspend fun aplicarImagenRestauracion() {
+        val archivo = imagenRestauracion ?: "-"
+        val coincidencia = Regex("^m_([a-z]+)([0-9]+)\\.txt$").find(archivo)
+        val nombreImagen = if (coincidencia != null) {
+            "i_" + coincidencia.groupValues[1] + coincidencia.groupValues[2]
+        } else {
+            "i_portada"
+        }
+        val bitmap = cargarImagen(nombreImagen)
+        if (bitmap != null) {
+            _estado.update {
+                it.copy(imagen = bitmap)
+            }
+        }
+    }
+
+    private fun guardarEstado() {
+        if (pila.isEmpty()) {
+            return
+        }
+        val raiz = pila.first().first
+        val linea2 = pila.joinToString(",") { "${it.first}:${it.second}" }
+        val linea3 = pila.last().second.toString()
+        val linea4 = _estado.value.cuentas.joinToString("") { if (it) "1" else "0" }
+        val linea5 = tituloActual ?: "-"
+        val linea6 = misterioActual ?: "-"
+        val contenido = listOf(raiz, linea2, linea3, linea4, linea5, linea6)
+            .joinToString("\n")
+
+        scope.launch {
+            withContext(Dispatchers.IO) {
+                try {
+                    File(context.filesDir, NOMBRE_ESTADO).writeText(contenido)
+                } catch (e: Exception) {
+                }
+            }
+        }
+    }
+
+    private fun leerEstadoGuardado(): DatosGuardados? {
+        return try {
+            val lineas = File(context.filesDir, NOMBRE_ESTADO).readLines()
+            if (lineas.size != 6) {
+                throw Exception()
+            }
+            val raiz = lineas[0].trim()
+            if (!raiz.endsWith(".txt")) {
+                throw Exception()
+            }
+            val pares = lineas[1].trim().split(",").map { parte ->
+                val trozos = parte.split(":")
+                if (trozos.size != 2) {
+                    throw Exception()
+                }
+                val indice = trozos[1].toIntOrNull() ?: throw Exception()
+                if (indice < 0) {
+                    throw Exception()
+                }
+                trozos[0] to indice
+            }
+            if (pares.isEmpty()) {
+                throw Exception()
+            }
+            val linea3 = lineas[2].trim().toIntOrNull() ?: throw Exception()
+            if (linea3 != pares.last().second) {
+                throw Exception()
+            }
+            val mascara = lineas[3].trim()
+            if (mascara.length != 10 || mascara.any { it != '0' && it != '1' }) {
+                throw Exception()
+            }
+            val titulo = lineas[4].trim()
+            val misterio = lineas[5].trim()
+            if (titulo.isEmpty() || misterio.isEmpty()) {
+                throw Exception()
+            }
+            DatosGuardados(raiz, pares, misterio)
+        } catch (e: Exception) {
+            borrarEstado()
+            null
+        }
+    }
+
+    private fun borrarEstado() {
+        try {
+            File(context.filesDir, NOMBRE_ESTADO).delete()
+        } catch (e: Exception) {
+        }
+    }
+
+    private suspend fun cargarLineasGuion(nombre: String): List<String>? {
+        return withContext(Dispatchers.IO) {
+            try {
+                context.assets.open("guias/$nombre.txt")
+                    .bufferedReader()
+                    .useLines { lineas ->
+                        lineas.toList()
+                    }
+            } catch (e: Exception) {
+                null
+            }
+        }
+    }
+
+    private suspend fun cargarTexto(nombre: String): String? {
+        return withContext(Dispatchers.IO) {
+            try {
+                context.assets.open("textos/$nombre.txt")
+                    .bufferedReader()
+                    .use { it.readText() }
+                    .trim()
+            } catch (e: Exception) {
+                null
+            }
+        }
+    }
+
+    private suspend fun cargarImagen(nombre: String): Bitmap? {
+        return withContext(Dispatchers.IO) {
+            try {
+                context.assets.open("imagenes/$nombre.jpg")
+                    .use { inputStream ->
+                        BitmapFactory.decodeStream(inputStream)
+                    }
+            } catch (e: Exception) {
+                null
+            }
+        }
+    }
+
+    private suspend fun reproducirAudio(nombre: String) {
+        val afd = withContext(Dispatchers.IO) {
+            try {
+                context.assets.openFd("sonidos/$nombre.mp3")
+            } catch (e: Exception) {
+                null
+            }
+        }
+
+        if (afd == null) {
+            mostrarError(
+                "No se encuentra el archivo de audio:\n" +
+                    "sonidos/$nombre.mp3"
+            )
+            return
+        }
+
+        try {
+            suspendCancellableCoroutine<Unit> { continuation ->
+                val player = MediaPlayer()
+                mediaPlayer = player
+                try {
+                    player.setDataSource(
+                        afd.fileDescriptor,
+                        afd.startOffset,
+                        afd.length
+                    )
+                    player.setOnCompletionListener { mp ->
+                        mp.release()
+                        mediaPlayer = null
+                        continuation.resumeWith(Result.success(Unit))
+                    }
+                    player.setOnErrorListener { mp, _, _ ->
+                        mp.release()
+                        mediaPlayer = null
+                        continuation.resumeWith(Result.success(Unit))
+                        true
+                    }
+                    player.prepare()
+                    player.start()
+                } catch (e: Exception) {
+                    player.release()
+                    mediaPlayer = null
+                    continuation.resumeWith(Result.success(Unit))
+                }
+                continuation.invokeOnCancellation {
+                    try {
+                        player.stop()
+                    } catch (e: Exception) {
+                    }
+                    player.release()
+                    mediaPlayer = null
+                }
+            }
+        } finally {
+            try {
+                afd.close()
+            } catch (e: Exception) {
+            }
+        }
+    }
+
+    private fun liberarAudio() {
+        try {
+            mediaPlayer?.stop()
+        } catch (e: Exception) {
+        }
+        try {
+            mediaPlayer?.release()
+        } catch (e: Exception) {
+        }
+        mediaPlayer = null
+    }
+}
+```
+
+### 7.2 🔴 RosarioForegroundService.kt — 🟢 contenido exacto
+```kotlin
+package com.pmartimor.rosario
+
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.app.Service
+import android.content.Intent
+import android.content.pm.ServiceInfo
+import android.graphics.drawable.Icon
+import android.os.Binder
+import android.os.Build
+import android.os.IBinder
+import android.os.PowerManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+
+class RosarioForegroundService : Service() {
+
+    companion object {
+        const val ACTION_INICIAR = "com.pmartimor.rosario.INICIAR_REZO"
+        const val ACTION_DETENER = "com.pmartimor.rosario.DETENER_REZO"
+        const val ACTION_RESTAURAR = "com.pmartimor.rosario.RESTAURAR"
+        const val EXTRA_GUION = "guion"
+        const val CANAL_ID = "rosario_rezo"
+        const val NOTIFICACION_ID = 1
+
+        var activo = false
+            private set
+    }
+
+    inner class LocalBinder : Binder() {
+        fun getService(): RosarioForegroundService = this@RosarioForegroundService
+    }
+
+    private val binder = LocalBinder()
+
+    val motor: MotorRosario by lazy { MotorRosario(applicationContext) }
+
+    private val _rezoActivoFlow = MutableStateFlow(false)
+    val rezoActivoFlow: StateFlow<Boolean> = _rezoActivoFlow
+
+    private var wakeLock: PowerManager.WakeLock? = null
+    private var rezoActivo = false
+
+    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+    private var collectorJob: Job? = null
+
+    override fun onCreate() {
+        super.onCreate()
+        crearCanalNotificacion()
+
+        collectorJob = serviceScope.launch {
+            motor.estado.collect { estado ->
+                if (rezoActivo) {
+                    if (estado.finalizado) {
+                        detenerRezo()
+                    } else {
+                        actualizarWakeLock(estado.pausado)
+                    }
+                }
+            }
+        }
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        when (intent?.action) {
+            ACTION_INICIAR -> {
+                val guion = intent.getStringExtra(EXTRA_GUION) ?: "g_ls"
+                iniciarRezo(guion)
+            }
+
+            ACTION_DETENER -> {
+                detenerRezo()
+            }
+
+            ACTION_RESTAURAR -> {
+                activo = true
+                rezoActivo = true
+                _rezoActivoFlow.value = true
+                startForegroundConNotificacion()
+                if (!motor.restaurar()) {
+                    detenerRezo()
+                }
+            }
+        }
+
+        return START_NOT_STICKY
+    }
+
+    override fun onBind(intent: Intent): IBinder = binder
+
+    fun rezoEnCurso(): Boolean {
+        return rezoActivo && !motor.estado.value.finalizado
+    }
+
+    fun iniciarRezo(guion: String) {
+        activo = true
+        rezoActivo = true
+        _rezoActivoFlow.value = true
+
+        startForegroundConNotificacion()
+        motor.iniciar(guion)
+        actualizarWakeLock(motor.estado.value.pausado)
+    }
+
+    fun detenerRezo() {
+        activo = false
+        rezoActivo = false
+        _rezoActivoFlow.value = false
+
+        liberarWakeLock()
+        motor.detener()
+
+        stopForeground(STOP_FOREGROUND_REMOVE)
+        stopSelf()
+    }
+
+    override fun onDestroy() {
+        activo = false
+        rezoActivo = false
+        _rezoActivoFlow.value = false
+
+        collectorJob?.cancel()
+        serviceScope.cancel()
+        liberarWakeLock()
+        motor.detener()
+
+        super.onDestroy()
+    }
+
+    private fun startForegroundConNotificacion() {
+        val notificacion = construirNotificacion()
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(
+                NOTIFICACION_ID,
+                notificacion,
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+            )
+        } else {
+            startForeground(NOTIFICACION_ID, notificacion)
+        }
+    }
+
+    private fun crearCanalNotificacion() {
+        val canal = NotificationChannel(
+            CANAL_ID,
+            "Rezo del Rosario",
+            NotificationManager.IMPORTANCE_LOW
+        ).apply {
+            setSound(null, null)
+            enableVibration(false)
+            enableLights(false)
+            description = "Aviso del rezo del Santo Rosario"
+        }
+
+        val manager = getSystemService(NotificationManager::class.java)
+        manager.createNotificationChannel(canal)
+    }
+
+    private fun construirNotificacion(): Notification {
+        val abrirIntent = Intent(this, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
+        }
+
+        val abrirPending = PendingIntent.getActivity(
+            this,
+            0,
+            abrirIntent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
+        val detenerIntent = Intent(this, RosarioForegroundService::class.java).apply {
+            action = ACTION_DETENER
+        }
+
+        val detenerPending = PendingIntent.getService(
+            this,
+            1,
+            detenerIntent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
+        val iconoAccion = Icon.createWithResource(
+            this,
+            android.R.drawable.ic_media_pause
+        )
+
+        val accionDetener = Notification.Action.Builder(
+            iconoAccion,
+            "Detener rezo",
+            detenerPending
+        ).build()
+
+        return Notification.Builder(this, CANAL_ID)
+            .setContentTitle("Santo Rosario")
+            .setContentText("Rezo en curso")
+            .setSmallIcon(android.R.drawable.ic_media_play)
+            .setContentIntent(abrirPending)
+            .setOngoing(true)
+            .setAutoCancel(false)
+            .setOnlyAlertOnce(true)
+            .setCategory(Notification.CATEGORY_SERVICE)
+            .setSound(null)
+            .setVibrate(null)
+            .addAction(accionDetener)
+            .build()
+    }
+
+    private fun actualizarWakeLock(pausado: Boolean) {
+        if (!rezoActivo) {
+            liberarWakeLock()
+            return
+        }
+
+        if (pausado) {
+            liberarWakeLock()
+        } else {
+            adquirirWakeLock()
+        }
+    }
+
+    private fun adquirirWakeLock() {
+        if (wakeLock == null) {
+            val powerManager = getSystemService(POWER_SERVICE) as PowerManager
+            wakeLock = powerManager.newWakeLock(
+                PowerManager.PARTIAL_WAKE_LOCK,
+                "SantoRosario:Rezo"
+            ).apply {
+                setReferenceCounted(false)
+            }
+        }
+
+        val lock = wakeLock ?: return
+
+        if (!lock.isHeld) {
+            lock.acquire(3 * 60 * 60 * 1000L)
+        }
+    }
+
+    private fun liberarWakeLock() {
+        try {
+            if (wakeLock?.isHeld == true) {
+                wakeLock?.release()
+            }
+        } catch (_: Exception) {
+        }
+    }
+}
+```
+
+### 7.3 🔴 MainActivity.kt — 🟢 contenido exacto
+```kotlin
+package com.pmartimor.rosario
+
+import android.Manifest
+import android.app.Activity
+import android.content.ComponentName
+import android.content.Intent
+import android.content.ServiceConnection
+import android.content.pm.PackageManager
+import android.graphics.BitmapFactory
+import android.os.Build
+import android.os.Bundle
+import android.os.IBinder
+import android.view.WindowManager
+import android.widget.Toast
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
+import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
+
+private val AzulFondo = Color(0xFF0A1A33)
+private val AzulBoton = Color(0xFF153C66)
+private val Blanco = Color(0xFFFFFFFF)
+private val AmarilloCuenta = Color(0xFFFFD000)
+private val GrisCuenta = Color(0xFF686868)
+
+private enum class Pantalla {
+    Inicio,
+    Rezo,
+    Ayuda
+}
+
+class MainActivity : ComponentActivity() {
+
+    private val pantallaState = mutableStateOf(Pantalla.Inicio)
+    private val motorState = mutableStateOf<MotorRosario?>(null)
+    private val servicioState = mutableStateOf<RosarioForegroundService?>(null)
+
+    private var servicio: RosarioForegroundService? = null
+    private var guionPendiente: String? = null
+    private var esperandoRezo = false
+    private var enlazado = false
+
+    private val permissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { concedido ->
+        val guion = guionPendiente
+        guionPendiente = null
+
+        if (guion != null) {
+            if (!concedido && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                Toast.makeText(
+                    this@MainActivity,
+                    "Sin notificación, el rezo seguirá solo con la app en pantalla.",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+
+            comenzarRezo(guion)
+        }
+    }
+
+    private val conexion = object : ServiceConnection {
+
+        override fun onServiceConnected(nombre: ComponentName?, binder: IBinder?) {
+            val localBinder = binder as? RosarioForegroundService.LocalBinder ?: return
+            val servicioLocal = localBinder.getService()
+
+            servicio = servicioLocal
+            servicioState.value = servicioLocal
+            motorState.value = servicioLocal.motor
+            enlazado = true
+
+            if (esperandoRezo || servicioLocal.rezoEnCurso()) {
+                pantallaState.value = Pantalla.Rezo
+            }
+
+            esperandoRezo = false
+        }
+
+        override fun onServiceDisconnected(nombre: ComponentName?) {
+            servicio = null
+            servicioState.value = null
+            motorState.value = null
+            enlazado = false
+
+            if (!esperandoRezo) {
+                pantallaState.value = Pantalla.Inicio
+            }
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        if (RosarioForegroundService.activo) {
+            bindService(
+                Intent(this, RosarioForegroundService::class.java),
+                conexion,
+                0
+            )
+        } else if (MotorRosario.hayEstadoGuardado(this)) {
+            esperandoRezo = true
+            val intentRestaurar = Intent(this, RosarioForegroundService::class.java)
+                .setAction(RosarioForegroundService.ACTION_RESTAURAR)
+            startForegroundService(intentRestaurar)
+            bindService(
+                Intent(this, RosarioForegroundService::class.java),
+                conexion,
+                BIND_AUTO_CREATE
+            )
+            pantallaState.value = Pantalla.Rezo
+        }
+
+        setContent {
+            AppSantoRosario(
+                pantallaState = pantallaState,
+                motorState = motorState,
+                servicioState = servicioState,
+                alPulsarDia = { guion -> solicitarIniciarRezo(guion) },
+                alRegresar = { detenerRezoDesdeUi() },
+                alPausar = { motorState.value?.pausarReanudar() },
+                alTerminarRezo = { terminarRezoLocal() }
+            )
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        if (RosarioForegroundService.activo) {
+            if (!enlazado) {
+                bindService(
+                    Intent(this, RosarioForegroundService::class.java),
+                    conexion,
+                    0
+                )
+            }
+
+            pantallaState.value = Pantalla.Rezo
+        }
+    }
+
+    override fun onDestroy() {
+        if (enlazado) {
+            try {
+                unbindService(conexion)
+            } catch (_: Exception) {
+            }
+            enlazado = false
+        }
+
+        super.onDestroy()
+    }
+
+    private fun solicitarIniciarRezo(guion: String) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            guionPendiente = guion
+            permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            comenzarRezo(guion)
+        }
+    }
+
+    private fun comenzarRezo(guion: String) {
+        esperandoRezo = true
+
+        val intent = Intent(this, RosarioForegroundService::class.java)
+            .setAction(RosarioForegroundService.ACTION_INICIAR)
+            .putExtra(RosarioForegroundService.EXTRA_GUION, guion)
+
+        startForegroundService(intent)
+
+        if (!enlazado) {
+            bindService(
+                Intent(this, RosarioForegroundService::class.java),
+                conexion,
+                BIND_AUTO_CREATE
+            )
+        }
+
+        pantallaState.value = Pantalla.Rezo
+    }
+
+    private fun detenerRezoDesdeUi() {
+        val servicioActual = servicio
+
+        if (servicioActual != null) {
+            servicioActual.detenerRezo()
+        } else {
+            val intent = Intent(this, RosarioForegroundService::class.java)
+                .setAction(RosarioForegroundService.ACTION_DETENER)
+            startService(intent)
+        }
+
+        terminarRezoLocal()
+    }
+
+    private fun terminarRezoLocal() {
+        esperandoRezo = false
+        pantallaState.value = Pantalla.Inicio
+        motorState.value = null
+        servicioState.value = null
+        servicio = null
+
+        if (enlazado) {
+            try {
+                unbindService(conexion)
+            } catch (_: Exception) {
+            }
+            enlazado = false
+        }
+    }
+}
+
+@Composable
+private fun AppSantoRosario(
+    pantallaState: MutableState<Pantalla>,
+    motorState: MutableState<MotorRosario?>,
+    servicioState: MutableState<RosarioForegroundService?>,
+    alPulsarDia: (String) -> Unit,
+    alRegresar: () -> Unit,
+    alPausar: () -> Unit,
+    alTerminarRezo: () -> Unit
+) {
+    val pantalla by remember { pantallaState }
+    val motor by remember { motorState }
+    val servicio by remember { servicioState }
+    val context = LocalContext.current
+
+    LaunchedEffect(pantalla) {
+        val window = (context as? Activity)?.window
+
+        if (window != null) {
+            if (pantalla == Pantalla.Rezo) {
+                window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            } else {
+                window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            }
+        }
+    }
+
+    val motorActual = motor
+    val servicioActual = servicio
+
+    when (pantalla) {
+        Pantalla.Rezo -> {
+            if (motorActual != null) {
+                val estado by motorActual.estado.collectAsState()
+
+                if (servicioActual != null) {
+                    val servicioActivo by servicioActual.rezoActivoFlow.collectAsState()
+                    var yaActivo by remember { mutableStateOf(false) }
+
+                    LaunchedEffect(servicioActivo) {
+                        if (servicioActivo) {
+                            yaActivo = true
+                        } else if (yaActivo) {
+                            alTerminarRezo()
+                        }
+                    }
+                }
+
+                LaunchedEffect(estado.finalizado) {
+                    if (estado.finalizado) {
+                        pantallaState.value = Pantalla.Inicio
+                    }
+                }
+
+                BackHandler(enabled = true) {
+                    alRegresar()
+                }
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(AzulFondo)
+                        .safeDrawingPadding()
+                        .padding(16.dp)
+                ) {
+                    PantallaRezo(
+                        estado = estado,
+                        alRegresar = alRegresar,
+                        alPausar = alPausar
+                    )
+                }
+
+                estado.dialogoError?.let { mensaje ->
+                    AlertDialog(
+                        onDismissRequest = { },
+                        title = {
+                            Text(
+                                text = "Aviso",
+                                color = Blanco,
+                                fontSize = 24.sp
+                            )
+                        },
+                        text = {
+                            Text(
+                                text = mensaje,
+                                color = Blanco,
+                                fontSize = 20.sp
+                            )
+                        },
+                        confirmButton = {
+                            TextButton(onClick = { motorActual.aceptarError() }) {
+                                Text(
+                                    text = "Continuar",
+                                    color = AmarilloCuenta,
+                                    fontSize = 22.sp
+                                )
+                            }
+                        },
+                        containerColor = AzulBoton
+                    )
+                }
+            } else {
+                BackHandler(enabled = true) {
+                    alRegresar()
+                }
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(AzulFondo)
+                )
+            }
+        }
+
+        Pantalla.Ayuda -> {
+            BackHandler(enabled = true) {
+                pantallaState.value = Pantalla.Inicio
+            }
+
+            PantallaAyuda(
+                alRegresar = { pantallaState.value = Pantalla.Inicio }
+            )
+        }
+
+        Pantalla.Inicio -> {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(AzulFondo)
+                    .safeDrawingPadding()
+                    .padding(16.dp)
+            ) {
+                PantallaInicio(
+                    alPulsarDia = alPulsarDia,
+                    alPulsarAyuda = { pantallaState.value = Pantalla.Ayuda }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun PantallaInicio(
+    alPulsarDia: (String) -> Unit,
+    alPulsarAyuda: () -> Unit
+) {
+    val context = LocalContext.current
+
+    val portada = remember {
+        try {
+            context.assets.open("imagenes/i_portada.jpg").use {
+                BitmapFactory.decodeStream(it)
+            }
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    Text(
+        text = "SANTO ROSARIO",
+        color = Blanco,
+        fontSize = 34.sp,
+        fontWeight = FontWeight.Bold,
+        textAlign = TextAlign.Center,
+        modifier = Modifier.fillMaxWidth()
+    )
+
+    Spacer(modifier = Modifier.height(12.dp))
+
+    if (portada != null) {
+        Image(
+            bitmap = portada.asImageBitmap(),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(220.dp)
+        )
+    }
+
+    Spacer(modifier = Modifier.height(16.dp))
+
+    val botones = listOf(
+        "LUNES" to "g_ls",
+        "VIERNES" to "g_mv",
+        "MARTES" to "g_mv",
+        "SÁBADO" to "g_ls",
+        "MIÉRCOLES" to "g_xd",
+        "DOMINGO" to "g_xd",
+        "JUEVES" to "g_ju",
+        "AYUDA" to ""
+    )
+
+    botones.chunked(2).forEach { pareja ->
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            pareja.forEach { (texto, guion) ->
+                Button(
+                    onClick = {
+                        if (texto == "AYUDA") {
+                            alPulsarAyuda()
+                        } else if (guion.isNotEmpty()) {
+                            alPulsarDia(guion)
+                        }
+                    },
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(64.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = AzulBoton)
+                ) {
+                    Text(
+                        text = texto,
+                        color = Blanco,
+                        fontSize = 18.sp
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+    }
+}
+
+@Composable
+private fun PantallaRezo(
+    estado: EstadoRosario,
+    alRegresar: () -> Unit,
+    alPausar: () -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = estado.titulo,
+            color = Blanco,
+            fontSize = 22.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.weight(1f)
+        )
+
+        Button(
+            onClick = alRegresar,
+            colors = ButtonDefaults.buttonColors(containerColor = AzulBoton),
+            contentPadding = PaddingValues(0.dp),
+            modifier = Modifier.size(56.dp)
+        ) {
+            Text(
+                text = "⏪",
+                fontSize = 24.sp
+            )
+        }
+    }
+
+    Spacer(modifier = Modifier.height(8.dp))
+
+    if (estado.imagen != null) {
+        Image(
+            bitmap = estado.imagen.asImageBitmap(),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(140.dp)
+        )
+    } else {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(140.dp)
+                .background(AzulBoton)
+        )
+    }
+
+    Spacer(modifier = Modifier.height(8.dp))
+
+    Text(
+        text = estado.misterio,
+        color = Blanco,
+        fontSize = 20.sp,
+        textAlign = TextAlign.Center,
+        modifier = Modifier.fillMaxWidth()
+    )
+
+    Spacer(modifier = Modifier.height(8.dp))
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        estado.cuentas.forEach { encendida ->
+            Box(
+                modifier = Modifier
+                    .size(18.dp)
+                    .clip(CircleShape)
+                    .background(if (encendida) AmarilloCuenta else GrisCuenta)
+            )
+
+            Spacer(modifier = Modifier.width(6.dp))
+        }
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        Button(
+            onClick = alPausar,
+            colors = ButtonDefaults.buttonColors(containerColor = AzulBoton),
+            contentPadding = PaddingValues(0.dp),
+            modifier = Modifier.size(56.dp)
+        ) {
+            Text(
+                text = "⏯",
+                fontSize = 24.sp
+            )
+        }
+    }
+
+    Spacer(modifier = Modifier.height(12.dp))
+
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        estado.oracion.forEach { bloque ->
+            Text(
+                text = bloque.texto,
+                color = Color(bloque.color),
+                fontSize = 20.sp
+            )
+        }
+    }
+}
+
+@Composable
+private fun PantallaAyuda(alRegresar: () -> Unit) {
+    val context = LocalContext.current
+
+    val lineas = remember {
+        try {
+            context.assets.open("textos/t_ayuda.txt")
+                .bufferedReader()
+                .use { it.readText() }
+                .split("\n")
+        } catch (e: Exception) {
+            listOf(
+                "No se encuentra el archivo de texto:",
+                "textos/t_ayuda.txt"
+            )
+        }
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(AzulFondo)
+            .safeDrawingPadding()
+            .padding(16.dp)
+    ) {
+        Text(
+            text = "AYUDA",
+            color = Blanco,
+            fontSize = 28.sp,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            lineas.forEach { linea ->
+                if (linea.isBlank()) {
+                    Spacer(modifier = Modifier.height(10.dp))
+                } else {
+                    Text(
+                        text = linea,
+                        color = Blanco,
+                        fontSize = 20.sp
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Button(
+            onClick = alRegresar,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(64.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = AzulBoton)
+        ) {
+            Text(
+                text = "REGRESAR",
+                color = Blanco,
+                fontSize = 20.sp
+            )
+        }
+    }
+}
+```
