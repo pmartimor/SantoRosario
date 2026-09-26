@@ -1,4 +1,4 @@
-# MANUAL MAESTRO — PROYECTO SANTO ROSARIO (v8.0)
+# PROYECTO SANTO ROSARIO (v8.0)
 
 ## 0. CÓMO USAR ESTE MANUAL
 ### Reglas para cualquier LLM que continúe
@@ -748,8 +748,8 @@ CÓMO USAR ESTA APP
 
 10. Si pulsa algo por equivocación, no se pierde nada: siempre puede volver con ⏪ o con el botón REGRESAR.
 
-Idea y contenido: pmartimor
-Versión 1.0
+(pmartimor
+Santo Rosario v1.0)
 ```
 
 ---
