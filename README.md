@@ -62,7 +62,7 @@
 ## 2. ENTORNO
 - IDE: Android Studio (Windows 11). Ruta: `C:\Users\MH\AndroidStudioProjects\SantoRosario`
 - Package: `com.pmartimor.rosario`
-- Dispositivo: Xiaomi 14C (depuración USB + adb)
+- Dispositivo: Xiaomi (depuración USB + adb)
 - Gradle: minSdk 26 · targetSdk 37 · compileSdk release(37) · AGP 9.3.2 ·
   Kotlin 2.2.10 · Compose BOM 2026.08.00. 🟡 NO actualizar AGP si Studio lo sugiere
 - Stack: Kotlin + Jetpack Compose + MediaPlayer + AssetManager +
