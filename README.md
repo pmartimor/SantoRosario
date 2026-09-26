@@ -12,7 +12,7 @@
 7. Nunca volcar código masivo sin antes validar los assets implicados.
 
 ### Estado real del proyecto HOY
-- App TERMINADA y funcionando OK en el Xiaomi 14C.
+- App TERMINADA y funcionando OK en smartphone Xiaomi.
 - H1, H2, H3, H4, H5 y H7 CERRADOS con "Prueba OK" / "icono OK".
 - H6 (cablear `g_portada` + pulidos) = MEJORA FUTURA OPCIONAL, fuera de
   la hoja de ruta. La app está completa sin él.
