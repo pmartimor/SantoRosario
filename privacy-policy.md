@@ -20,7 +20,6 @@ Si tiene alguna duda o pregunta sobre esta política de privacidad, puede poners
 
 ---
 
-
 ### English
 
 The free application **"Santo Rosario sin Internet"**, developed by PABLO ANTONIO MARTINEZ MORILLAS, is designed with the utmost respect for the privacy of its users.
@@ -29,8 +28,6 @@ The free application **"Santo Rosario sin Internet"**, developed by PABLO ANTONI
 * **Advertising and Purchases:** It does not include any third-party advertising, analytics tools, tracking SDKs, or in-app purchases.
 * **Permissions:** The application does not request any special or sensitive device permissions to function properly.
 
-* **Contact**
-
-If you have any questions or concerns regarding this privacy policy, you may contact the developer via email at: martinezmorillaspablo@gmail.com
+* **Contact**: If you have any questions or concerns regarding this privacy policy, you may contact the developer via email at: martinezmorillaspablo@gmail.com
 
 
