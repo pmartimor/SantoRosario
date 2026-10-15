@@ -18,7 +18,7 @@ La aplicación gratuita **"Santo Rosario sin Internet"**, desarrollada por PABLO
 * **Contacto:**
 Si tiene alguna duda o pregunta sobre esta política de privacidad, puede ponerse en contacto con el desarrollador a través del correo electrónico: martinezmorillaspablo@gmail.com
 
----
+---|---
 
 ### English
 
