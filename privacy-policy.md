@@ -15,10 +15,10 @@ La aplicación gratuita **"Santo Rosario sin Internet"**, desarrollada por PABLO
 * **Publicidad y compras:** No incluye ningún tipo de publicidad de terceros, herramientas de análisis (analytics), SDKs de seguimiento ni compras integradas.
 * **Permisos:** La aplicación no solicita ningún tipo de permiso especial o sensible en el dispositivo para su correcto funcionamiento.
 
-* **Contacto:**
+* **Contacto :**
 Si tiene alguna duda o pregunta sobre esta política de privacidad, puede ponerse en contacto con el desarrollador a través del correo electrónico: martinezmorillaspablo@gmail.com
 
----|---
+---
 
 ### English
 
