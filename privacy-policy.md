@@ -13,7 +13,7 @@ La aplicación gratuita **"Santo Rosario sin Internet"**, desarrollada por PABLO
 * **Recopilación de datos:** La aplicación no recopila, no almacena, no registra ni comparte ningún tipo de información personal, datos del dispositivo, datos de localización ni identificadores de usuario.
 * **Funcionamiento offline:** Es una aplicación totalmente independiente y sin conexión que trabaja exclusivamente en el almacenamiento local del dispositivo. No requiere conexión a Internet para su uso principal.
 * **Publicidad y compras:** No incluye ningún tipo de publicidad de terceros, herramientas de análisis (analytics), SDKs de seguimiento ni compras integradas.
-* **Permisos:** La aplicación no solicita ningún tipo de permiso especial o sensible en el dispositivo para su correcto funcionamiento.
+* **Permisos:** La aplicación no solicita ningún tipo de permiso especial o sensible en el dispositivo para su correcto funcionamiento. Únicamente se solicita el permiso de notificaciones para poder mostrar los controles de pausa y reproducción del Rosario en la pantalla de bloqueo.
 
 * **Contacto :**
 Si tiene alguna duda o pregunta sobre esta política de privacidad, puede ponerse en contacto con el desarrollador a través del correo electrónico: martinezmorillaspablo@gmail.com
