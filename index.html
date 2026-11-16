@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Santo Rosario sin Internet — App Gratuita para Android</title>
+    <meta name="description" content="Descarga gratis la app Santo Rosario sin Internet. Sin anuncios, sin registro y sin consumo de datos. Una iniciativa de voluntarios de la Agrupación Santo Rosario.">
+    <style>
+        :root {
+            --bg-color: #faf8f5;
+            --card-bg: #ffffff;
+            --primary: #1e3a5f;
+            --primary-hover: #152a45;
+            --gold: #b8860b;
+            --gold-light: #f9f3e3;
+            --text-main: #222222;
+            --text-muted: #555555;
+            --border-color: #e6e0d6;
+            --huawei-color: #c7000b;
+            --uptodown-color: #00aad5;
+            --google-color: #0f9d58;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 24px 18px 48px;
+        }
+
+        header {
+            text-align: center;
+            padding: 28px 16px 24px;
+            background: var(--card-bg);
+            border-radius: 18px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+            margin-bottom: 24px;
+        }
+
+        .badge {
+            display: inline-block;
+            background-color: var(--gold-light);
+            color: var(--gold);
+            font-weight: 700;
+            font-size: 0.82rem;
+            padding: 5px 12px;
+            border-radius: 20px;
+            border: 1px solid rgba(184, 134, 11, 0.25);
+            margin-bottom: 14px;
+            letter-spacing: 0.3px;
+        }
+
+        .app-icon-placeholder {
+            width: 84px;
+            height: 84px;
+            margin: 0 auto 14px;
+            background: linear-gradient(135deg, var(--primary), #2c5282);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #f6e05e;
+            font-size: 2.4rem;
+            box-shadow: 0 6px 14px rgba(30, 58, 95, 0.2);
+        }
+
+        h1 {
+            font-size: 1.75rem;
+            color: var(--primary);
+            line-height: 1.25;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.05rem;
+            color: var(--text-muted);
+            max-width: 500px;
+            margin: 0 auto 22px;
+        }
+
+        .download-section {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-width: 380px;
+            margin: 0 auto;
+        }
+
+        .btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            text-decoration: none;
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 1rem;
+            padding: 14px 20px;
+            border-radius: 12px;
+            transition: transform 0.15s ease, opacity 0.15s ease;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn:hover {
+            opacity: 0.93;
+        }
+
+        .btn-google {
+            background-color: var(--google-color);
+        }
+
+        .btn-huawei {
+            background-color: var(--huawei-color);
+        }
+
+        .btn-uptodown {
+            background-color: var(--uptodown-color);
+        }
+
+        .btn-sub {
+            font-size: 0.78rem;
+            font-weight: 400;
+            opacity: 0.9;
+            display: block;
+        }
+
+        .btn-text {
+            text-align: left;
+            line-height: 1.25;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            padding: 22px 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+        }
+
+        h2 {
+            font-size: 1.25rem;
+            color: var(--primary);
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .features-list {
+            list-style: none;
+            display: grid;
+            gap: 12px;
+        }
+
+        .features-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            font-size: 0.98rem;
+        }
+
+        .check {
+            color: var(--google-color);
+            font-weight: bold;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .screenshots-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .screenshot-slot {
+            aspect-ratio: 9 / 19;
+            background-color: #f1ede6;
+            border: 1px dashed #c8bfb0;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 10px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            overflow: hidden;
+        }
+
+        .screenshot-slot img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+        .manifesto {
+            background-color: var(--gold-light);
+            border-color: rgba(184, 134, 11, 0.3);
+        }
+
+        .manifesto p {
+            margin-bottom: 10px;
+            font-size: 0.97rem;
+        }
+
+        .manifesto p:last-child {
+            margin-bottom: 0;
+        }
+
+        .social-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .social-pill {
+            display: inline-block;
+            padding: 8px 14px;
+            background-color: #f3f0ea;
+            color: var(--primary);
+            text-decoration: none;
+            border-radius: 20px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            border: 1px solid var(--border-color);
+        }
+
+        .social-pill:hover {
+            background-color: #e9e4da;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 32px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+            font-size: 0.83rem;
+            color: var(--text-muted);
+        }
+
+        footer p {
+            margin-bottom: 8px;
+        }
+
+        .privacy-box {
+            background-color: #f4f1ec;
+            padding: 12px 14px;
+            border-radius: 10px;
+            margin-top: 12px;
+            font-size: 0.8rem;
+            line-height: 1.5;
+            text-align: left;
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+            .screenshots-grid {
+                gap: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- CABECERA Y BOTONES DE DESCARGA -->
+        <header>
+            <span class="badge">Agrupación Santo Rosario • 25 años en redes</span>
+            <!-- Puedes sustituir este div por <img src="icono.webp" alt="Icono Santo Rosario" class="app-icon-placeholder"> -->
+            <div class="app-icon-placeholder" aria-hidden="true">📿</div>
+            <h1>Santo Rosario sin Internet</h1>
+            <p class="subtitle">Reza el Santo Rosario en cualquier lugar, sin conexión, sin anuncios y sin pedirte ningún dato.</p>
+
+            <div class="download-section">
+                <!-- BOTÓN GOOGLE PLAY (ACTIVO) -->
+                <a href="https://play.google.com/store/apps/details?id=com.pmartimor.rosario" class="btn btn-google" target="_blank" rel="noopener noreferrer">
+                    <span style="font-size: 1.4rem;">▶</span>
+                    <div class="btn-text">
+                        Descargar en Google Play
+                        <span class="btn-sub">Para móviles Android estándar</span>
+                    </div>
+                </a>
+
+                <!-- BOTÓN HUAWEI APPGALLERY (PEGA TU ENLACE EN href="...") -->
+                <a href="#pegar-enlace-huawei" class="btn btn-huawei" target="_blank" rel="noopener noreferrer">
+                    <span style="font-size: 1.4rem;">🛍</span>
+                    <div class="btn-text">
+                        Descargar en AppGallery
+                        <span class="btn-sub">Para dispositivos Huawei</span>
+                    </div>
+                </a>
+
+                <!-- BOTÓN UPTODOWN (PEGA TU ENLACE EN href="...") -->
+                <a href="#pegar-enlace-uptodown" class="btn btn-uptodown" target="_blank" rel="noopener noreferrer">
+                    <span style="font-size: 1.4rem;">⬇</span>
+                    <div class="btn-text">
+                        Descargar en Uptodown
+                        <span class="btn-sub">Descarga directa gratuita (APK)</span>
+                    </div>
+                </a>
+            </div>
+        </header>
+
+        <!-- CARACTERÍSTICAS PRINCIPALES -->
+        <section class="card">
+            <h2>¿Por qué esta aplicación?</h2>
+            <ul class="features-list">
+                <li>
+                    <span class="check">✓</span>
+                    <div><strong>100 % sin internet:</strong> Una vez instalada, no necesita cobertura ni consume tus datos móviles. Ideal para rezar en el campo, de viaje o en templos sin señal.</div>
+                </li>
+                <li>
+                    <span class="check">✓</span>
+                    <div><strong>Totalmente gratuita:</strong> Sin pagos ocultos, sin suscripciones ni versiones de pago.</div>
+                </li>
+                <li>
+                    <span class="check">✓</span>
+                    <div><strong>Sin anuncios ni interrupciones:</strong> Nada rompe el recogimiento mientras rezas.</div>
+                </li>
+                <li>
+                    <span class="check">✓</span>
+                    <div><strong>Privacidad absoluta:</strong> No pide registro, ni correo electrónico, ni permisos innecesarios en tu teléfono.</div>
+                </li>
+                <li>
+                    <span class="check">✓</span>
+                    <div><strong>Audio y texto sincronizados:</strong> Síguelo leyendo en pantalla o apaga la pantalla y continúa rezando escuchando la guía.</div>
+                </li>
+            </ul>
+        </section>
+
+        <!-- CAPTURAS DE PANTALLA -->
+        <section class="card">
+            <h2>Así es por dentro</h2>
+            <p style="font-size: 0.92rem; color: var(--text-muted);">Interfaz clara, con letra legible y pensada para facilitar la oración diaria.</p>
+            <div class="screenshots-grid">
+                <!-- Sustituye cada div por <img src="captura1.webp" alt="Pantalla principal"> cuando subas tus imágenes -->
+                <div class="screenshot-slot">Captura 1<br><small>(Misterios del día)</small></div>
+                <div class="screenshot-slot">Captura 2<br><small>(Rezo y audio)</small></div>
+                <div class="screenshot-slot">Captura 3<br><small>(Letanías)</small></div>
+            </div>
+        </section>
+
+        <!-- MANIFIESTO: NO VENDEMOS NADA -->
+        <section class="card manifesto">
+            <h2>«No vendemos nada»</h2>
+            <p>Esta aplicación ha sido desarrollada de forma altruista por programadores voluntarios de la <strong>Agrupación Santo Rosario</strong>, una comunidad católica que lleva <strong>25 años compartiendo la devoción al Santo Rosario y a la Virgen María</strong> en internet y redes sociales.</p>
+            <p>Nuestro único propósito es ofrecer una herramienta sencilla, digna y accesible para quien quiera rezar el Rosario cada día o aprender a rezarlo, sin pedir nada a cambio.</p>
+
+            <div class="social-links">
+                <!-- Actualiza los enlaces con las URLs exactas de tus perfiles -->
+                <a href="https://www.tiktok.com/@rezoelsantorosario" class="social-pill" target="_blank" rel="noopener noreferrer">TikTok: @rezoelsantorosario</a>
+                <a href="https://www.facebook.com/" class="social-pill" target="_blank" rel="noopener noreferrer">Facebook: Rezo el Santo Rosario</a>
+                <a href="https://www.instagram.com/" class="social-pill" target="_blank" rel="noopener noreferrer">Instagram: Rezo el Santo Rosario</a>
+                <a href="https://x.com/" class="social-pill" target="_blank" rel="noopener noreferrer">X: Rezo el Santo Rosario</a>
+            </div>
+        </section>
+
+        <!-- PIE DE PÁGINA Y AVISO LEGAL / PRIVACIDAD WEB -->
+        <footer>
+            <p><strong>Agrupación Santo Rosario</strong> • Iniciativa sin ánimo de lucro</p>
+            <p>¿Tienes alguna duda o sugerencia? Escríbenos por mensaje directo en nuestras redes sociales <strong>Rezo el Santo Rosario</strong>.</p>
+
+            <div class="privacy-box">
+                <strong>Aviso Legal y Privacidad del Sitio Web:</strong> Esta página web es exclusivamente informativa y está promovida sin ánimo de lucro por voluntarios de la Agrupación Santo Rosario. Este sitio web <strong>no utiliza cookies</strong> propias ni de terceros con fines analíticos, publicitarios o de seguimiento, ni recopila datos personales de los visitantes. La política de privacidad específica de la aplicación Android puede consultarse directamente en su ficha oficial de Google Play.
+            </div>
+        </footer>
+    </div>
+</body>
+</html>
