@@ -1,0 +1,4 @@
+# Configuración de GitHub Pages
+# Evita que el README se publique como página web en rezoelsantorosario.app/README.html
+exclude:
+  - README.md

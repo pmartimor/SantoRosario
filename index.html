@@ -5,6 +5,66 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Santo Rosario sin Internet — App Gratuita para Android</title>
     <meta name="description" content="Descarga gratis la app Santo Rosario sin Internet. Sin anuncios, sin registro y sin consumo de datos. Una iniciativa de voluntarios de la Agrupación Santo Rosario.">
+    <link rel="canonical" href="https://rezoelsantorosario.app/">
+    <meta name="theme-color" content="#1e3a5f">
+
+    <!-- Icono de la pestaña y del acceso directo en iPhone -->
+    <link rel="icon" type="image/webp" href="ico1.webp">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+    <!-- Vista previa al compartir (WhatsApp, Facebook, Telegram, X...) -->
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="es_ES">
+    <meta property="og:site_name" content="Rezo el Santo Rosario">
+    <meta property="og:url" content="https://rezoelsantorosario.app/">
+    <meta property="og:title" content="Santo Rosario sin Internet — App gratuita para Android">
+    <meta property="og:description" content="Reza el Santo Rosario en cualquier lugar, sin conexión, sin anuncios y sin pedirte ningún dato.">
+    <meta property="og:image" content="https://rezoelsantorosario.app/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Icono de la app Santo Rosario sin Internet">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Santo Rosario sin Internet — App gratuita para Android">
+    <meta name="twitter:description" content="Reza el Santo Rosario en cualquier lugar, sin conexión, sin anuncios y sin pedirte ningún dato.">
+    <meta name="twitter:image" content="https://rezoelsantorosario.app/og-image.png">
+
+    <!-- Datos estructurados para Google -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "MobileApplication",
+      "name": "Santo Rosario sin Internet",
+      "operatingSystem": "Android",
+      "applicationCategory": "LifestyleApplication",
+      "inLanguage": "es",
+      "url": "https://rezoelsantorosario.app/",
+      "image": "https://rezoelsantorosario.app/ico1.webp",
+      "screenshot": [
+        "https://rezoelsantorosario.app/01.webp",
+        "https://rezoelsantorosario.app/02.webp",
+        "https://rezoelsantorosario.app/04.webp"
+      ],
+      "description": "App gratuita para rezar el Santo Rosario sin conexión a internet, con audio y texto sincronizados, sin anuncios y sin registro.",
+      "installUrl": "https://play.google.com/store/apps/details?id=com.pmartimor.rosario",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
+      "author": {
+        "@type": "Organization",
+        "name": "Agrupación Santo Rosario",
+        "url": "https://rezoelsantorosario.app/",
+        "email": "martinezmorillaspablo@gmail.com",
+        "sameAs": [
+          "https://www.youtube.com/@rezoelsantorosario",
+          "https://www.facebook.com/share/1DRDQajLeg/",
+          "https://www.instagram.com/rezoelsantorosario/",
+          "https://www.threads.com/@rezoelsantorosario",
+          "https://www.tiktok.com/@pmartimor",
+          "https://x.com/elrosariorezo",
+          "https://pin.it/3VQxt5tyB",
+          "https://whatsapp.com/channel/0029VbDlwhP5q08bgFnjLP3h"
+        ]
+      }
+    }
+    </script>
     <style>
         :root {
             --bg-color: #faf8f5;
@@ -135,6 +195,11 @@
             background-color: var(--uptodown-color);
         }
 
+        .btn-icon {
+            flex-shrink: 0;
+            display: block;
+        }
+
         .btn-sub {
             font-size: 0.78rem;
             font-weight: 400;
@@ -261,6 +326,11 @@
             color: var(--text-muted);
         }
 
+        footer a {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
         footer p {
             margin-bottom: 8px;
         }
@@ -290,8 +360,7 @@
         <!-- CABECERA Y BOTONES DE DESCARGA -->
         <header>
             <span class="badge">Agrupación Santo Rosario • 25 años en redes</span>
-            <!-- Puedes sustituir este div por <img src="icono.webp" alt="Icono Santo Rosario" class="app-icon-placeholder"> -->
-                        <img src="ico1.webp" alt="Icono Santo Rosario sin Internet" class="app-icon-placeholder" style="object-fit: cover;">
+            <img src="ico1.webp" alt="Icono de la app Santo Rosario sin Internet" class="app-icon-placeholder" width="84" height="84" style="object-fit: cover;">
 
             <h1>Santo Rosario sin Internet</h1>
             <p class="subtitle">Reza el Santo Rosario en cualquier lugar, sin conexión, sin anuncios y sin pedirte ningún dato.</p>
@@ -299,7 +368,7 @@
             <div class="download-section">
                 <!-- BOTÓN GOOGLE PLAY (ACTIVO) -->
                 <a href="https://play.google.com/store/apps/details?id=com.pmartimor.rosario" class="btn btn-google" target="_blank" rel="noopener noreferrer">
-                    <span style="font-size: 1.4rem;">▶</span>
+                    <svg class="btn-icon" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M7 4.5v15a1 1 0 0 0 1.52.85l12-7.5a1 1 0 0 0 0-1.7l-12-7.5A1 1 0 0 0 7 4.5z"/></svg>
                     <div class="btn-text">
                         Descargar en Google Play
                         <span class="btn-sub">Para móviles Android estándar</span>
@@ -307,21 +376,21 @@
                 </a>
 
                 
-                <!-- BOTÓN HUAWEI APPGALLERY (PEGA TU ENLACE EN href="...") -->
+                <!-- BOTÓN HUAWEI APPGALLERY -->
                 <a href="https://appgallery.huawei.com/app/C119245943" class="btn btn-huawei" target="_blank" rel="noopener noreferrer">
-                    <span style="font-size: 1.4rem;">🛍</span>
+                    <svg class="btn-icon" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" d="M5 8h14l-1 12H6L5 8z"/><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M9 10V7a3 3 0 0 1 6 0v3"/></svg>
                     <div class="btn-text">
                         Descargar en AppGallery
                         <span class="btn-sub">Para dispositivos Huawei</span>
                     </div>
                 </a>
 
-                <!-- BOTÓN UPTODOWN (PEGA TU ENLACE EN href="...") -->
+                <!-- BOTÓN UPTODOWN: de momento lleva a Google Play. Cuando la ficha de Uptodown esté lista, cambia el href y los textos -->
                 <a href="https://play.google.com/store/apps/details?id=com.pmartimor.rosario" class="btn btn-uptodown" target="_blank" rel="noopener noreferrer">
-                    <span style="font-size: 1.4rem;">⬇</span>
+                    <svg class="btn-icon" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg>
                     <div class="btn-text">
-                        Descargar en Uptodown
-                        <span class="btn-sub">Descarga directa gratuita (APK)</span>
+                        Próximamente en Uptodown
+                        <span class="btn-sub">Mientras tanto, descárgala en Google Play</span>
                     </div>
                 </a>
             </div>
@@ -359,10 +428,9 @@
             <h2>Así es por dentro</h2>
             <p style="font-size: 0.92rem; color: var(--text-muted);">Interfaz clara, con letra legible y pensada para facilitar la oración diaria.</p>
             <div class="screenshots-grid">
-                <!-- Sustituye cada div por <img src="captura1.webp" alt="Pantalla principal"> cuando subas tus imágenes -->
-                <div class="screenshot-slot" style="padding: 0; border: none;"><img src="01.webp" alt="Inicio"></div>
-                <div class="screenshot-slot" style="padding: 0; border: none;"><img src="02.webp" alt="Miesterios del día"></div>
-                <div class="screenshot-slot" style="padding: 0; border: none;"><img src="04.webp" alt="Congiruación"></div>
+                <div class="screenshot-slot" style="padding: 0; border: none;"><img src="01.webp" alt="Pantalla de inicio: imagen de la Virgen y botones para elegir el día de la semana, de lunes a domingo" width="501" height="1140" loading="lazy" decoding="async"></div>
+                <div class="screenshot-slot" style="padding: 0; border: none;"><img src="02.webp" alt="Rezo de los Misterios Gozosos: imagen del misterio, contador de avemarías y texto de la oración en pantalla" width="501" height="1140" loading="lazy" decoding="async"></div>
+                <div class="screenshot-slot" style="padding: 0; border: none;"><img src="04.webp" alt="Configuración: tamaño de letra de las oraciones, velocidad del rezo y aviso de privacidad" width="501" height="1140" loading="lazy" decoding="async"></div>
             </div>
         </section>
 
@@ -373,21 +441,24 @@
             <p>Nuestro único propósito es ofrecer una herramienta sencilla, digna y accesible para quien quiera rezar el Rosario cada día o aprender a rezarlo, sin pedir nada a cambio.</p>
 
             <div class="social-links">
-                <!-- Actualiza los enlaces con las URLs exactas de tus perfiles -->
-                <a href="https://www.tiktok.com/@rezoelsantorosario" class="social-pill" target="_blank" rel="noopener noreferrer">TikTok: @rezoelsantorosario</a>
-                <a href="https://www.facebook.com/" class="social-pill" target="_blank" rel="noopener noreferrer">Facebook: Rezo el Santo Rosario</a>
-                <a href="https://www.instagram.com/" class="social-pill" target="_blank" rel="noopener noreferrer">Instagram: Rezo el Santo Rosario</a>
-                <a href="https://x.com/" class="social-pill" target="_blank" rel="noopener noreferrer">X: Rezo el Santo Rosario</a>
+                <a href="https://www.youtube.com/@rezoelsantorosario" class="social-pill" target="_blank" rel="noopener noreferrer">YouTube: @rezoelsantorosario</a>
+                <a href="https://whatsapp.com/channel/0029VbDlwhP5q08bgFnjLP3h" class="social-pill" target="_blank" rel="noopener noreferrer">Canal de WhatsApp</a>
+                <a href="https://www.facebook.com/share/1DRDQajLeg/" class="social-pill" target="_blank" rel="noopener noreferrer">Facebook: Rezo el Santo Rosario</a>
+                <a href="https://www.instagram.com/rezoelsantorosario/" class="social-pill" target="_blank" rel="noopener noreferrer">Instagram: @rezoelsantorosario</a>
+                <a href="https://www.threads.com/@rezoelsantorosario" class="social-pill" target="_blank" rel="noopener noreferrer">Threads: @rezoelsantorosario</a>
+                <a href="https://www.tiktok.com/@pmartimor" class="social-pill" target="_blank" rel="noopener noreferrer">TikTok: @pmartimor</a>
+                <a href="https://x.com/elrosariorezo" class="social-pill" target="_blank" rel="noopener noreferrer">X: @elrosariorezo</a>
+                <a href="https://pin.it/3VQxt5tyB" class="social-pill" target="_blank" rel="noopener noreferrer">Pinterest</a>
             </div>
         </section>
 
         <!-- PIE DE PÁGINA Y AVISO LEGAL / PRIVACIDAD WEB -->
         <footer>
             <p><strong>Agrupación Santo Rosario</strong> • Iniciativa sin ánimo de lucro</p>
-            <p>¿Tienes alguna duda o sugerencia? Escríbenos por mensaje directo en nuestras redes sociales <strong>Rezo el Santo Rosario</strong>.</p>
+            <p>¿Tienes alguna duda o sugerencia? Escríbenos a <a href="mailto:martinezmorillaspablo@gmail.com">martinezmorillaspablo@gmail.com</a> o por mensaje directo en nuestras redes sociales <strong>Rezo el Santo Rosario</strong>.</p>
 
             <div class="privacy-box">
-                <strong>Aviso Legal y Privacidad del Sitio Web:</strong> Esta página web es exclusivamente informativa y está promovida sin ánimo de lucro por voluntarios de la Agrupación Santo Rosario. Este sitio web <strong>no utiliza cookies</strong> propias ni de terceros con fines analíticos, publicitarios o de seguimiento, ni recopila datos personales de los visitantes. La política de privacidad específica de la aplicación Android puede consultarse directamente en su ficha oficial de Google Play.
+                <strong>Aviso Legal y Privacidad del Sitio Web:</strong> Esta página web es exclusivamente informativa y está promovida sin ánimo de lucro por voluntarios de la Agrupación Santo Rosario. Este sitio web <strong>no utiliza cookies</strong> propias ni de terceros con fines analíticos, publicitarios o de seguimiento, ni recopila datos personales de los visitantes. La política de privacidad específica de la aplicación Android puede consultarse en <a href="privacy-policy.html">este enlace</a> y en su ficha oficial de Google Play.
             </div>
         </footer>
     </div>
