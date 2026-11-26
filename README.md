@@ -6,5 +6,6 @@ App gratuita para Android para rezar el Santo Rosario sin conexión, con audio y
 
 - Google Play: https://play.google.com/store/apps/details?id=com.pmartimor.rosario
 - Huawei AppGallery: https://appgallery.huawei.com/app/C119245943
+- Uptodown: https://com-pmartimor-rosario.uptodown.com/android
 - Política de privacidad: https://rezoelsantorosario.app/privacy-policy.html
 - Contacto: mensaje directo en nuestras redes sociales o rezoelsantorosarioapp@gmail.com

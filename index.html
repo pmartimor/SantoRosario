@@ -9,7 +9,8 @@
     <meta name="theme-color" content="#1e3a5f">
 
     <!-- Icono de la pestaña y del acceso directo en iPhone -->
-    <link rel="icon" type="image/webp" href="ico1.webp">
+    <link rel="icon" href="favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
 
     <!-- Vista previa al compartir (WhatsApp, Facebook, Telegram, X...) -->
@@ -136,6 +137,26 @@
             color: #f6e05e;
             font-size: 2.4rem;
             box-shadow: 0 6px 14px rgba(30, 58, 95, 0.2);
+        }
+
+        /* Enlace del medallón a Google Play: mismo hueco que el icono, centrado */
+        .app-icon-enlace {
+            display: block;
+            width: 84px;
+            margin: 0 auto 14px;
+            border-radius: 20px;
+            transition: transform 0.15s ease;
+        }
+        .app-icon-enlace .app-icon-placeholder {
+            margin: 0;
+        }
+        .app-icon-enlace:hover,
+        .app-icon-enlace:focus-visible {
+            transform: scale(1.05);
+        }
+        .app-icon-enlace:focus-visible {
+            outline: 3px solid #f6e05e;
+            outline-offset: 3px;
         }
 
         h1 {
@@ -360,7 +381,10 @@
         <!-- CABECERA Y BOTONES DE DESCARGA -->
         <header>
             <span class="badge">Agrupación Santo Rosario • 25 años en redes</span>
-            <img src="ico1.webp" alt="Icono de la app Santo Rosario sin Internet" class="app-icon-placeholder" width="84" height="84" style="object-fit: cover;">
+            <!-- El medallón lleva a la app en Google Play -->
+            <a href="https://play.google.com/store/apps/details?id=com.pmartimor.rosario" class="app-icon-enlace" target="_blank" rel="noopener noreferrer" aria-label="Descargar Santo Rosario sin Internet en Google Play" title="Descargar en Google Play">
+                <img src="ico1.webp" alt="Icono de la app Santo Rosario sin Internet" class="app-icon-placeholder" width="84" height="84" style="object-fit: cover;">
+            </a>
 
             <h1>Santo Rosario sin Internet</h1>
             <p class="subtitle">Reza el Santo Rosario en cualquier lugar, sin conexión, sin anuncios y sin pedirte ningún dato.</p>
@@ -385,12 +409,12 @@
                     </div>
                 </a>
 
-                <!-- BOTÓN UPTODOWN: de momento lleva a Google Play. Cuando la ficha de Uptodown esté lista, cambia el href y los textos -->
-                <a href="https://play.google.com/store/apps/details?id=com.pmartimor.rosario" class="btn btn-uptodown" target="_blank" rel="noopener noreferrer">
+                <!-- BOTÓN UPTODOWN (ficha en español) -->
+                <a href="https://com-pmartimor-rosario.uptodown.com/android" class="btn btn-uptodown" target="_blank" rel="noopener noreferrer">
                     <svg class="btn-icon" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg>
                     <div class="btn-text">
-                        Próximamente en Uptodown
-                        <span class="btn-sub">Mientras tanto, descárgala en Google Play</span>
+                        Descargar en Uptodown
+                        <span class="btn-sub">Para móviles sin Google Play</span>
                     </div>
                 </a>
             </div>
@@ -428,9 +452,9 @@
             <h2>Así es por dentro</h2>
             <p style="font-size: 0.92rem; color: var(--text-muted);">Interfaz clara, con letra legible y pensada para facilitar la oración diaria.</p>
             <div class="screenshots-grid">
-                <div class="screenshot-slot" style="padding: 0; border: none;"><img src="01.webp" alt="Pantalla de inicio: imagen de la Virgen y botones para elegir el día de la semana, de lunes a domingo" width="501" height="1140" loading="lazy" decoding="async"></div>
-                <div class="screenshot-slot" style="padding: 0; border: none;"><img src="02.webp" alt="Rezo de los Misterios Gozosos: imagen del misterio, contador de avemarías y texto de la oración en pantalla" width="501" height="1140" loading="lazy" decoding="async"></div>
-                <div class="screenshot-slot" style="padding: 0; border: none;"><img src="04.webp" alt="Configuración: tamaño de letra de las oraciones, velocidad del rezo y aviso de privacidad" width="501" height="1140" loading="lazy" decoding="async"></div>
+                <div class="screenshot-slot" style="padding: 0; border: none;"><img src="01.webp" alt="Pantalla de inicio: título Santo Rosario, botón para enviar el Rosario a un amigo, imagen de la Virgen y botones para elegir el día de la semana, de lunes a domingo" width="501" height="1140" loading="lazy" decoding="async"></div>
+                <div class="screenshot-slot" style="padding: 0; border: none;"><img src="02.webp" alt="Rezo de los Misterios Luminosos, el Bautismo de Jesús: imagen del misterio, contador de avemarías y texto del Avemaría en pantalla" width="501" height="1140" loading="lazy" decoding="async"></div>
+                <div class="screenshot-slot" style="padding: 0; border: none;"><img src="04.webp" alt="Configuración: tamaño de letra de las oraciones (pequeña, mediana o grande) con vista previa, velocidad del rezo (pausado, normal o rápido), enlace a la web y aviso de privacidad" width="501" height="1140" loading="lazy" decoding="async"></div>
             </div>
         </section>
 
